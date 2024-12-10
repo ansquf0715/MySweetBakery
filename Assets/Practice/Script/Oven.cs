@@ -23,7 +23,9 @@ public class Oven : MonoBehaviour
     {
         basket = transform.Find("Basket");
         basketCol = basket.GetComponent<Collider>();
-        InvokeRepeating(nameof(Bake), bakeInterval, bakeInterval);
+        //InvokeRepeating(nameof(Bake), bakeInterval, bakeInterval);
+
+        EventManager.OnRequestBread += Bake;
     }
 
     // Update is called once per frame
@@ -34,14 +36,16 @@ public class Oven : MonoBehaviour
 
     void Bake()
     {
-        if(currentBreadCount >= maxBreadCount)
-        {
-            return;
-        }
+        //if(currentBreadCount >= maxBreadCount)
+        //{
+        //    return;
+        //}
+        Debug.Log("Bake func");
 
         GameObject bread = Instantiate(breadPrefab, breadSpawnPos, Quaternion.Euler(0f, 90f, 0f));
         currentBreadCount++;
         StartCoroutine(MoveBreadToBasket(bread));
+        EventManager.BreadBaked(bread);
     }
 
     IEnumerator MoveBreadToBasket(GameObject bread)

@@ -18,8 +18,8 @@ public class Player : MonoBehaviour
         //if (joystick != null)
         //    joystick.onDirectionChanged += SetDirection;
 
+        rb = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
-
     }
 
     // Update is called once per frame
@@ -33,16 +33,14 @@ public class Player : MonoBehaviour
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
-        //m_Movement = new Vector3(horizontal, 0, vertical).normalized;
-        m_Movement = new Vector3(vertical, 0, horizontal).normalized;
+        m_Movement = new Vector3(horizontal, 0, vertical).normalized;
 
         transform.position += m_Movement * moveSpeed * Time.deltaTime;
-        //rb.MovePosition(transform.position + m_Movement * moveSpeed * Time.deltaTime);
 
-        if (m_Movement != Vector3.zero)
+        if(m_Movement != Vector3.zero)
         {
-            Quaternion rot = Quaternion.LookRotation(m_Movement, Vector3.up);
-            transform.rotation = Quaternion.Lerp(transform.rotation, rot, turnSpeed * Time.deltaTime);
+            Quaternion toRotation = Quaternion.LookRotation(m_Movement, Vector3.up);
+            transform.rotation = Quaternion.Lerp(transform.rotation, toRotation, turnSpeed * Time.deltaTime);
         }
 
         anim.SetBool("isMoving", m_Movement !=  Vector3.zero);
