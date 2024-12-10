@@ -25,7 +25,7 @@ public class Oven : MonoBehaviour
         basketCol = basket.GetComponent<Collider>();
         //InvokeRepeating(nameof(Bake), bakeInterval, bakeInterval);
 
-        EventManager.OnRequestBread += Bake;
+        EventManager.OnRequestBake += Bake;
     }
 
     // Update is called once per frame
@@ -40,7 +40,6 @@ public class Oven : MonoBehaviour
         //{
         //    return;
         //}
-        Debug.Log("Bake func");
 
         GameObject bread = Instantiate(breadPrefab, breadSpawnPos, Quaternion.Euler(0f, 90f, 0f));
         currentBreadCount++;
@@ -70,7 +69,15 @@ public class Oven : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Player"))
         {
-            Debug.Log("플레이어가 빵을 가지러 왔다!");
+            EventManager.SetPlayerNearOven(true);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if(other.gameObject.CompareTag("Player"))
+        {
+            EventManager.SetPlayerNearOven(false);
         }
     }
 }

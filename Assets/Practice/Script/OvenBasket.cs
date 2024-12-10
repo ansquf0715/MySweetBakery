@@ -6,7 +6,7 @@ public class OvenBasket : MonoBehaviour
 {
     public List<GameObject> breads = new List<GameObject>();
 
-    public int currentBreadCount = 0;
+    int currentBreadCount = 0;
     int maxBreadCount = 10;
 
     // Start is called before the first frame update
@@ -14,6 +14,7 @@ public class OvenBasket : MonoBehaviour
     {
         StartCoroutine(RequestBreads());
         EventManager.OnBreadBaked += AddBreadToList;
+        EventManager.OnPlayerBreadRequest += GivePlayerBreads;
     }
 
     // Update is called once per frame
@@ -24,11 +25,8 @@ public class OvenBasket : MonoBehaviour
 
     IEnumerator RequestBreads()
     {
-        Debug.Log("current bread count" + currentBreadCount);
-        Debug.Log("max bread count" +  maxBreadCount);
         while (currentBreadCount <= maxBreadCount)
         {
-            Debug.Log("Requesting bread");
             EventManager.RequestBread();
             currentBreadCount++;
             yield return new WaitForSeconds(1f);
@@ -43,15 +41,36 @@ public class OvenBasket : MonoBehaviour
         }
     }
 
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if(other.gameObject.CompareTag("Bread"))
-    //    {
-    //        if(!breads.Contains(other.gameObject))
-    //        {
-    //            breads.Add(other.gameObject);
-    //        }
-    //    }
-    //}
+    void GivePlayerBreads(int amount)
+    {
+        List<GameObject> breadsToGive = new List<GameObject>();
+        int breadsToGiveCount = 0;
+
+        if (amount <= breads.Count)
+        {
+            breadsToGiveCount = amount;
+        }
+        else
+            breadsToGiveCount = breads.Count;
+
+        for(int i=0; i< breadsToGiveCount; i++)
+        {
+            GameObject bread = breads[0];
+            breads.RemoveAt(0);
+            currentBreadCount--;
+
+            Rigidbody breadRb = bread.GetComponent<Rigidbody>();
+            breadRb.isKinematic = true;
+            breadRb.useGravity = false;
+
+            Collider breadCol = bread.GetComponent<Collider>();
+            breadCol.enabled = false;
+
+            breadsToGive.Add(bread);
+            //Destroy(breads[0]);
+        }
+
+        EventManager.DeliverBreadsToPlayer(breadsToGive);
+    }
 
 }

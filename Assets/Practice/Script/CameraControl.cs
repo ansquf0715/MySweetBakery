@@ -28,6 +28,6 @@ public class CameraControl : MonoBehaviour
         Vector3 desiredPosition = player.position + followOffset;
         Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
         transform.position = smoothedPosition;
-        //transform.LookAt(player);
+        transform.LookAt(player);
     }
 }
