@@ -331,6 +331,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4541141870242516323}
   - component: {fileID: 971556608106169826}
+  - component: {fileID: -3052952614156447387}
+  - component: {fileID: 1520707288828933673}
   m_Layer: 10
   m_Name: Customer
   m_TagString: Untagged
@@ -364,17 +366,52 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3769144362882373593}
   m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Avatar: {fileID: 9000000, guid: f1dbe956d841e41abb3ed08d3b42d733, type: 3}
+  m_Controller: {fileID: 9100000, guid: 96d4ac8ad9871844897998b855f0a8fd, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &-3052952614156447387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3769144362882373593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9332a3200713804a8f44b29dd58b003, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  customerPositions: []
+--- !u!195 &1520707288828933673
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3769144362882373593}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1 &3898563997361661198
 GameObject:
   m_ObjectHideFlags: 0

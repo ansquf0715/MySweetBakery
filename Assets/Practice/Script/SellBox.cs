@@ -26,7 +26,20 @@ public class SellBox : MonoBehaviour
     void Update()
     {
         if (nearPlayer && currentBreadCount < maxBreadCount)
+            StartCoroutine(RequestBreadCoroutine());
+        //else
+        //{
+        //    StopCoroutine (RequestBreadCoroutine());
+        //}
+    }
+
+    IEnumerator RequestBreadCoroutine()
+    {
+        while(nearPlayer && currentBreadCount < maxBreadCount)
+        {
             EventManager.SellBoxRequestBread();
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -52,38 +65,41 @@ public class SellBox : MonoBehaviour
 
         currentBreadCount++;
         breads.Add(receivedBread);
-        SortBreads();
+        //SortBreads();
+
+        StartCoroutine(MoveBreadToSlot(receivedBread));
     }
 
-    void SortBreads()
+    IEnumerator MoveBreadToSlot(GameObject bread)
     {
-        int maxPerRow = 4; // 한 층에 최대 4개의 빵
-        float breadWidth = 0.5f; // 빵의 가로 크기
-        float breadHeight = 0.5f; // 빵의 세로 크기
+        Vector3 startPos = bread.transform.position;
 
-        Vector3 startPos = breadSlot.position; // breadSlot 위치는 정렬 시작의 왼쪽 상단 위치
+        //빵의 목표 위치
+        int maxPerRow = 4;
+        float breadWidth = 0.5f;
+        float breadHeight = 0.5f;
 
-        int rowCount = 0; 
-        int floor = 0; 
+        int row = (currentBreadCount - 1) % maxPerRow;
+        int floor = (currentBreadCount - 1) / maxPerRow;
 
-        for (int i = 0; i < breads.Count; i++)
+        Vector3 targetPos = breadSlot.position
+        + new Vector3(row * breadWidth,  // 가로 위치
+                      floor * breadHeight, // 세로 위치 (아래로 이동)
+                      0); // Z 위치는 변하지 않음
+
+        float elapsedTime = 0f;
+        float moveDuration = 0.5f;
+
+        while(elapsedTime < moveDuration)
         {
-            if (rowCount >= maxPerRow)
-            {
-                rowCount = 0; 
-                floor++; 
-            }
-
-            Vector3 breadPos = new Vector3(startPos.x + rowCount * breadWidth + (breadWidth / 2), // 빵의 가로 크기만큼 오른쪽으로 이동, 가운데 정렬
-                                           startPos.y + floor * breadHeight, // 위에서 아래로, 각 층이 다 차면 다음 층으로 이동
-                                           startPos.z + (breadWidth *1.5f)); // Z 위치는 변하지 않음
-
-            breads[i].transform.position = breadPos;
-            breads[i].transform.rotation = Quaternion.Euler(0, 0, 0); // 회전값 0으로 설정
-
-            breads[i].transform.SetParent(breadSlot);
-
-            rowCount++;
+            bread.transform.position = Vector3.Lerp(startPos, targetPos, (elapsedTime / moveDuration));
+            elapsedTime += Time.deltaTime;
+            yield return null;
         }
+
+        bread.transform.position = targetPos;
+        bread.transform.rotation = Quaternion.Euler(0, 0, 0);
+        bread.transform.SetParent(breadSlot);
     }
+
 }

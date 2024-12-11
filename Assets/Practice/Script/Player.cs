@@ -63,31 +63,7 @@ public class Player : MonoBehaviour
         EventManager.OnSellBoxRequestBread += GiveBreadToSellBox;
     }
 
-    void UpdateTriggerStatus(bool isNear)
-    {
-        isNearOven = isNear;
 
-        if(isNearOven && !isRequestingBread)
-        {
-            StartCoroutine(RequestBread());
-        }
-        else if(!isNearOven)
-        {
-            StopCoroutine(RequestBread());
-            isRequestingBread = false;
-        }
-    }
-
-    IEnumerator RequestBread()
-    {
-        isRequestingBread = true;
-        while(isNearOven && breads.Count < maxBreadCount)
-        {
-            EventManager.PlayerBreadRequest();
-            yield return new WaitForSeconds(0.5f);
-        }
-        isRequestingBread = false;
-    }
 
     // Update is called once per frame
     void Update()
@@ -122,19 +98,70 @@ public class Player : MonoBehaviour
             UpdateAnimation();
     }
 
+    void UpdateTriggerStatus(bool isNear)
+    {
+        isNearOven = isNear;
+
+        if (isNearOven && !isRequestingBread)
+        {
+            StartCoroutine(RequestBread());
+        }
+        else if (!isNearOven)
+        {
+            StopCoroutine(RequestBread());
+            isRequestingBread = false;
+        }
+    }
+
+    IEnumerator RequestBread()
+    {
+        isRequestingBread = true;
+        while (isNearOven && breads.Count < maxBreadCount)
+        {
+            EventManager.PlayerBreadRequest();
+            yield return new WaitForSeconds(0.1f);
+        }
+        isRequestingBread = false;
+    }
+
     void ReceivedBread(GameObject bread)
     {
-        if(bread!=null && breads.Count < maxBreadCount)
+        if (bread != null && breads.Count < maxBreadCount)
         {
-            bread.transform.parent = breadSlot;
-            bread.transform.rotation = Quaternion.Euler(0, 180f, 0);
-            bread.transform.localPosition = new Vector3(0, breadHeight * breads.Count, 0);
-            bread.transform.localEulerAngles = new Vector3(0, 90, 0);
-            breads.Add(bread);
+            Rigidbody breadRb = bread.GetComponent<Rigidbody>();
+            breadRb.isKinematic = true;
+            breadRb.useGravity = false;
 
-            if (breads.Count >= maxBreadCount)
-                ShowMaxText();
+            Collider breadCol = bread.GetComponent<Collider>();
+            breadCol.enabled = false;
+
+            StartCoroutine(MoveBreadToStack(bread));
         }
+    }
+
+    IEnumerator MoveBreadToStack(GameObject bread)
+    {
+        Vector3 startPos = bread.transform.position;
+        Vector3 endPos = breadSlot.position + new Vector3(0, breadHeight * breads.Count, 0);
+
+        float duration = 0.1f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            bread.transform.position
+                = Vector3.Lerp(startPos, endPos, elapsed / duration);
+            yield return null;
+        }
+
+        bread.transform.parent = breadSlot;
+        bread.transform.localPosition = new Vector3(0, breadHeight * breads.Count, 0);
+        bread.transform.localRotation = Quaternion.Euler(0, 90, 0);
+        breads.Add(bread);
+
+        if (breads.Count >= maxBreadCount)
+            ShowMaxText();
     }
 
     void ShowMaxText()

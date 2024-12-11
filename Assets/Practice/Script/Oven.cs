@@ -57,7 +57,7 @@ public class Oven : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         EventManager.BreadBaked(bread);
-        Destroy(bakeParticle.gameObject);
+        //Destroy(bakeParticle.gameObject);
     }
 
     IEnumerator MoveBreadToBasket(GameObject bread)

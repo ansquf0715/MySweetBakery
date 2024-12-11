@@ -32,7 +32,7 @@ public class OvenBasket : MonoBehaviour
                 EventManager.RequestBread();
                 currentBreadCount++;
             }
-            yield return new WaitForSeconds (0.1f);
+            yield return new WaitForSeconds (1f);
         }
     }
 
@@ -52,12 +52,12 @@ public class OvenBasket : MonoBehaviour
             breads.RemoveAt(0);
             currentBreadCount--;
 
-            Rigidbody breadRb = bread.GetComponent<Rigidbody>();
-            breadRb.isKinematic = true;
-            breadRb.useGravity = false;
+            //Rigidbody breadRb = bread.GetComponent<Rigidbody>();
+            //breadRb.isKinematic = true;
+            //breadRb.useGravity = false;
 
-            Collider breadCol = bread.GetComponent<Collider>();
-            breadCol.enabled = false;
+            //Collider breadCol = bread.GetComponent<Collider>();
+            //breadCol.enabled = false;
 
             EventManager.DeliverBreadToPlayer(bread);
         }
