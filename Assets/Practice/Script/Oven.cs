@@ -16,7 +16,7 @@ public class Oven : MonoBehaviour
 
     float moveSpeed = 2f;
 
-    Vector3 breadSpawnPos = new Vector3(4.7f, 1.8f, -4f);
+    Vector3 breadSpawnPos = new Vector3(4f, 1.8f, -5f);
 
     // Start is called before the first frame update
     void Start()

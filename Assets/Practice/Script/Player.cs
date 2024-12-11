@@ -20,8 +20,8 @@ public class Player : MonoBehaviour
     int currentBreadCount = 0;
     public List<GameObject> breads = new List<GameObject>();
 
-    Transform breadStackPoint;
-    float breadHeight = 0.3f;
+    Transform breadSlot;
+    float breadHeight = 0.2f;
     float currentTopHeight = 0f;
 
     Vector3 destination;
@@ -30,20 +30,19 @@ public class Player : MonoBehaviour
     {
         Idle,
         Move,
+        StackIdle,
+        StackMove,
     }
     State state;
 
     // Start is called before the first frame update
     void Start()
     {
-        //JoyStick joystick = FindObjectOfType<JoyStick>();
-        //if (joystick != null)
-        //    joystick.onDirectionChanged += SetDirection;
         state = State.Idle;
 
         rb = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
-        breadStackPoint = transform.Find("BreadStackPoint");
+        breadSlot = transform.Find("BreadStackPoint");
 
         //오븐 근처에 왔는지 전달받도록
         EventManager.OnPlayerNearOven += nearOvenStatus;
@@ -54,28 +53,11 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButton(0))
-        {
-            RaycastHit hit;
-            int layerMask = 1 << LayerMask.NameToLayer("Floor");
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit))
-            {
-                if(hit.collider.CompareTag("Floor"))
-                {
-                    Vector3 hitPoint = hit.point;
-                    Debug.Log("hit pos" + hitPoint);
+        UpdateAnimation();
+    }
 
-                    Vector3 targetPos = new Vector3(hit.point.x, 0.5f, hit.point.z);
-                    SetDestination(targetPos);
-                }
-            }
-            state = State.Move;
-            Move();
-        }
-        else
-        {
-            state = State.Idle;
-        }
+    void UpdateAnimation()
+    {
         switch (state)
         {
             case State.Idle:
@@ -84,28 +66,18 @@ public class Player : MonoBehaviour
             case State.Move:
                 anim.SetInteger("State", 1);
                 break;
+            case State.StackIdle:
+                anim.SetInteger("State", 2);
+                break;
+            case State.StackMove:
+                anim.SetInteger("State", 3);
+                break;
         }
     }
 
-    void SetDestination(Vector3 dest)
+    public void SetMoving(bool isMoving)
     {
-        destination = dest;
-    }
-
-    void Move()
-    {
-        Vector3 dir = destination - transform.position;
-        if(dir.magnitude > 0.1f)
-        {
-            Quaternion toRot = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Lerp(transform.rotation, toRot, turnSpeed * Time.deltaTime);
-
-            transform.position += dir.normalized * Time.deltaTime * moveSpeed;
-        }
-        else
-        {
-            destination = Vector3.zero;
-        }
+        state = isMoving ? State.Move : State.Idle;
     }
 
     void nearOvenStatus(bool isNear)
@@ -137,37 +109,33 @@ public class Player : MonoBehaviour
     void ReceiveBreads(List<GameObject> receivedBreads)
     {
         int remainingSpace = maxBreadCount - breads.Count;
+        Debug.Log(remainingSpace);
         if (remainingSpace <= 0)
+        {
+            Debug.Log("자리 없어");
             return;
-
-        int breadsToReceive = 0;
-        if(receivedBreads.Count <= remainingSpace)
-        {
-            breadsToReceive = receivedBreads.Count;
-        }
-        else
-        {
-            breadsToReceive = remainingSpace;
         }
 
-        if (breads.Count == 0)
-            currentTopHeight = 0f;
-        if(breads.Count > 0)
+        //int breadsToReceive = 0;
+        //if (receivedBreads.Count <= remainingSpace)
+        //{
+        //    breadsToReceive = receivedBreads.Count;
+        //}
+        //else
+        //{
+        //    breadsToReceive = remainingSpace;
+        //}
+
+        foreach (GameObject bread in receivedBreads)
         {
-            currentTopHeight = breads[breads.Count - 1].transform.localPosition.y + breadHeight;
-        }
+            bread.transform.parent = breadSlot;
 
-        foreach(GameObject bread in receivedBreads)
-        {
-            bread.transform.SetParent(breadStackPoint);
+            bread.transform.localPosition = new Vector3(0, breadHeight * breadSlot.childCount, 0);
+            bread.transform.localEulerAngles = Vector3.zero;
 
-            Vector3 stackPos = new Vector3(0, currentTopHeight, 0);
-            bread.transform.localPosition = stackPos;
-
-            currentTopHeight += breadHeight;
             breads.Add(bread);
         }
-
+  
         hasRequestedBread = false;
     }
 
