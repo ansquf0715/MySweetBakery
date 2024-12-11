@@ -13,47 +13,45 @@ public class SellBox : MonoBehaviour
     int maxBreadCount = 12;
     int currentBreadCount = 0;
 
+    bool nearPlayer = false;
+
     // Start is called before the first frame update
     void Start()
     {
         breadSlot = transform.Find("BreadSortSlot");
-
-        EventManager.OnPlayerGiveBreadToSellBox += ReceiveBreadsFromPlayer;
+        EventManager.OnPlayerGiveBreadToSellBox += ReceiveBreadFromPlayer;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (nearPlayer && currentBreadCount < maxBreadCount)
+            EventManager.SellBoxRequestBread();
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.CompareTag("Player"))
         {
-            int requestCount = maxBreadCount - currentBreadCount;
-            EventManager.SellBoxRequestBread(requestCount);
+            nearPlayer = true;
         }
     }
 
-    void ReceiveBreadsFromPlayer(List<GameObject> receivedBreads)
+    private void OnTriggerExit(Collider other)
     {
-        int space = maxBreadCount - currentBreadCount;
-
-        for(int i=0; i<receivedBreads.Count; i++)
+        if(other.gameObject.CompareTag("Player"))
         {
-            if(currentBreadCount >= maxBreadCount)
-            {
-                Debug.Log("»§ ÀÚ¸® ¾ø¾î¿ä¿Ë");
-                break;
-            }
-
-            currentBreadCount++;
-
-            breads.Add(receivedBreads[i]);
+            nearPlayer = false;
         }
+    }
 
-        Debug.Log("ÇöÀç »§ °¹¼ö" + currentBreadCount);
+    void ReceiveBreadFromPlayer(GameObject receivedBread)
+    {
+        if (currentBreadCount >= maxBreadCount)
+            return;
+
+        currentBreadCount++;
+        breads.Add(receivedBread);
         SortBreads();
     }
 

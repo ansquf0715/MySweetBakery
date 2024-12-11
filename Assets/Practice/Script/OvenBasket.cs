@@ -25,12 +25,6 @@ public class OvenBasket : MonoBehaviour
 
     IEnumerator RequestBreads()
     {
-        //while (currentBreadCount <= maxBreadCount)
-        //{
-        //    EventManager.RequestBread();
-        //    currentBreadCount++;
-        //    yield return new WaitForSeconds(1f);
-        //}
         while(true)
         {
             if(currentBreadCount < maxBreadCount)
@@ -38,7 +32,7 @@ public class OvenBasket : MonoBehaviour
                 EventManager.RequestBread();
                 currentBreadCount++;
             }
-            yield return new WaitForSeconds (1f);
+            yield return new WaitForSeconds (0.1f);
         }
     }
 
@@ -50,21 +44,9 @@ public class OvenBasket : MonoBehaviour
         }
     }
 
-    void GivePlayerBreads(int amount)
+    void GivePlayerBreads()
     {
-        List<GameObject> breadsToGive = new List<GameObject>();
-        int breadsToGiveCount = amount;
-        if(breadsToGiveCount > breads.Count)
-        {
-            breadsToGiveCount = breads.Count;
-        }
-        if(breadsToGiveCount <= 0)
-        {
-            Debug.Log("No breads availabe to give");
-            return;
-        }
-
-        for(int i=0; i< breadsToGiveCount; i++)
+        if(breads.Count > 0)
         {
             GameObject bread = breads[0];
             breads.RemoveAt(0);
@@ -77,11 +59,13 @@ public class OvenBasket : MonoBehaviour
             Collider breadCol = bread.GetComponent<Collider>();
             breadCol.enabled = false;
 
-            breadsToGive.Add(bread);
-            //Destroy(breads[0]);
+            EventManager.DeliverBreadToPlayer(bread);
         }
-
-        EventManager.DeliverBreadsToPlayer(breadsToGive);
+        else
+        {
+            Debug.Log("No breads are available");
+            return;
+        }
     }
 
 }

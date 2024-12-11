@@ -15,7 +15,8 @@ public class Player : MonoBehaviour
     public float turnSpeed = 5f;
 
     bool isNearOven = false;
-    bool hasRequestedBread = false;
+    bool isRequestingBread = false;
+    //bool hasRequestedBread = false;
 
     int maxBreadCount = 8;
     int currentBreadCount = 0;
@@ -52,12 +53,40 @@ public class Player : MonoBehaviour
         maxText.gameObject.SetActive(false);
 
         //오븐 근처에 왔는지 전달받도록
-        EventManager.OnPlayerNearOven += nearOvenStatus;
+        //EventManager.OnPlayerNearOven += nearOvenStatus;
+        EventManager.OnPlayerNearOven += UpdateTriggerStatus;
         //빵을 주는지 알도록
-        EventManager.OnPlayerReceiveBreads += ReceiveBreads;
+        EventManager.OnPlayerReceiveBreads += ReceivedBread;
 
         //sell box가 빵을 달라고 요청하는지
-        EventManager.OnSellBoxRequestBread += ReceiveSellBoxBreadRequest;
+        //EventManager.OnSellBoxRequestBread += ReceiveSellBoxBreadRequest;
+        EventManager.OnSellBoxRequestBread += GiveBreadToSellBox;
+    }
+
+    void UpdateTriggerStatus(bool isNear)
+    {
+        isNearOven = isNear;
+
+        if(isNearOven && !isRequestingBread)
+        {
+            StartCoroutine(RequestBread());
+        }
+        else if(!isNearOven)
+        {
+            StopCoroutine(RequestBread());
+            isRequestingBread = false;
+        }
+    }
+
+    IEnumerator RequestBread()
+    {
+        isRequestingBread = true;
+        while(isNearOven && breads.Count < maxBreadCount)
+        {
+            EventManager.PlayerBreadRequest();
+            yield return new WaitForSeconds(0.5f);
+        }
+        isRequestingBread = false;
     }
 
     // Update is called once per frame
@@ -91,68 +120,21 @@ public class Player : MonoBehaviour
 
         if(previous != state)
             UpdateAnimation();
-        //UpdateAnimation();
     }
 
-    void nearOvenStatus(bool isNear)
+    void ReceivedBread(GameObject bread)
     {
-        isNearOven = isNear;
-
-        if(isNearOven && !hasRequestedBread)
+        if(bread!=null && breads.Count < maxBreadCount)
         {
-            StartCoroutine(RequestBread());
-        }
-        else if(!isNearOven)
-        {
-            hasRequestedBread = false;
-        }
-    }
+            bread.transform.parent = breadSlot;
+            bread.transform.rotation = Quaternion.Euler(0, 180f, 0);
+            bread.transform.localPosition = new Vector3(0, breadHeight * breads.Count, 0);
+            bread.transform.localEulerAngles = new Vector3(0, 90, 0);
+            breads.Add(bread);
 
-    IEnumerator RequestBread()
-    {
-        int requestBreadCount = maxBreadCount - currentBreadCount;
-        if(requestBreadCount > 0)
-        {
-            EventManager.PlayerBreadRequest(requestBreadCount);
-            hasRequestedBread = true;
+            if (breads.Count >= maxBreadCount)
+                ShowMaxText();
         }
-
-        yield return null;
-    }
-
-    void ReceiveBreads(List<GameObject> receivedBreads)
-    {
-        int remainingSpace = maxBreadCount - breads.Count;
-        Debug.Log(remainingSpace);
-        if (remainingSpace <= 0)
-        {
-            Debug.Log("자리 없어");
-            return;
-        }
-
-        foreach(GameObject bread in receivedBreads)
-        {
-            if(breads.Count < maxBreadCount)
-            {
-                bread.transform.parent = breadSlot;
-                bread.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
-                bread.transform.localPosition = new Vector3(0, breadHeight * breads.Count, 0);
-                bread.transform.localEulerAngles = new Vector3(0, 90, 0);
-                breads.Add(bread);
-            }
-            else
-            {
-                Debug.Log("자리 없어어어어");
-                break;
-            }
-        }
-
-        if (breads.Count >= maxBreadCount)
-            ShowMaxText();
-        
-        //state = State.StackIdle;
-        //UpdateAnimation();
-        hasRequestedBread = false;
     }
 
     void ShowMaxText()
@@ -174,28 +156,20 @@ public class Player : MonoBehaviour
         maxText.gameObject.SetActive(false);
     }
 
-    void ReceiveSellBoxBreadRequest(int amount)
+    void GiveBreadToSellBox()
     {
-        Debug.Log("sellbox에서 " + amount);
-        List<GameObject> breadsToGive = new List<GameObject>();
-
-        int breadCountToGive;
-        if(amount < breads.Count)
-            breadCountToGive = amount;
-        else
-            breadCountToGive = breads.Count;
-
-        for(int i=0; i<breadCountToGive; i++)
+        if(breads.Count > 0)
         {
-            GameObject bread = breads[breads.Count - 1];
-            breadsToGive.Add(bread);
+            GameObject bread = breads[breads.Count-1];
             breads.RemoveAt(breads.Count - 1);
+            EventManager.PlayerGiveBreadToSellBox(bread);
+
+            if(breads.Count < maxBreadCount)
+                HideMaxText();
         }
-
-        EventManager.PlayerGiveBreadToSellBox(breadsToGive);
-
-        if (breads.Count < maxBreadCount)
-            HideMaxText();
+        else
+        {
+            return;
+        }
     }
-
 }

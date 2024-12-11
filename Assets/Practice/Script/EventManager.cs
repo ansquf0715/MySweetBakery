@@ -9,12 +9,12 @@ public class EventManager : MonoBehaviour
     public static event Action<GameObject> OnBreadBaked; //빵이 구워졌을 때 들어오는 이벤트
 
     public static event Action<bool> OnPlayerNearOven; //player가 oven 근처라는 이벤트
-    public static event Action<int> OnPlayerBreadRequest; //player가 빵을 달라고 요청하는 이벤트
-    public static event Action<List<GameObject>> OnPlayerReceiveBreads; //player가 빵을 받는 이벤트
+    public static event Action OnPlayerBreadRequest; //player가 빵을 달라고 요청하는 이벤트
+    public static event Action<GameObject> OnPlayerReceiveBreads; //player가 빵을 받는 이벤트
 
-    public static event Action<int> OnSellBoxRequestBread; //sellbox가 player한테 빵 요청
-    public static event Action<List<GameObject>> OnPlayerGiveBreadToSellBox; //player가 sellbox에 빵 전달
-
+    public static event Action OnSellBoxRequestBread; //sellbox가 player한테 빵 달라고 요청
+    public static event Action<GameObject> OnPlayerGiveBreadToSellBox; //player가 sellbox에 빵을 줌
+    
     public static void RequestBread()
     {
         OnRequestBake?.Invoke();
@@ -30,22 +30,22 @@ public class EventManager : MonoBehaviour
         OnPlayerNearOven?.Invoke(isNear);
     }
 
-    public static void PlayerBreadRequest(int amount)
+    public static void PlayerBreadRequest()
     {
-        OnPlayerBreadRequest?.Invoke(amount);
+        OnPlayerBreadRequest?.Invoke();
     }
 
-    public static void DeliverBreadsToPlayer(List<GameObject> bread)
+    public static void DeliverBreadToPlayer(GameObject bread)
     {
         OnPlayerReceiveBreads?.Invoke(bread);
     }
-
-    public static void SellBoxRequestBread(int amount)
+    
+    public static void SellBoxRequestBread()
     {
-        OnSellBoxRequestBread?.Invoke(amount);
+        OnSellBoxRequestBread?.Invoke();
     }
 
-    public static void PlayerGiveBreadToSellBox(List<GameObject> bread)
+    public static void PlayerGiveBreadToSellBox(GameObject bread)
     {
         OnPlayerGiveBreadToSellBox?.Invoke(bread);
     }
