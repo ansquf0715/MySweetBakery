@@ -44,14 +44,16 @@ public class OvenBasket : MonoBehaviour
     void GivePlayerBreads(int amount)
     {
         List<GameObject> breadsToGive = new List<GameObject>();
-        int breadsToGiveCount = 0;
-
-        if (amount <= breads.Count)
+        int breadsToGiveCount = amount;
+        if(breadsToGiveCount > breads.Count)
         {
-            breadsToGiveCount = amount;
-        }
-        else
             breadsToGiveCount = breads.Count;
+        }
+        if(breadsToGiveCount <= 0)
+        {
+            Debug.Log("No breads availabe to give");
+            return;
+        }
 
         for(int i=0; i< breadsToGiveCount; i++)
         {
