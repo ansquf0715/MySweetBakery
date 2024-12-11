@@ -23,7 +23,6 @@ public class Oven : MonoBehaviour
     {
         basket = transform.Find("Basket");
         basketCol = basket.GetComponent<Collider>();
-        //InvokeRepeating(nameof(Bake), bakeInterval, bakeInterval);
 
         EventManager.OnRequestBake += Bake;
     }
@@ -36,14 +35,16 @@ public class Oven : MonoBehaviour
 
     void Bake()
     {
-        //if(currentBreadCount >= maxBreadCount)
-        //{
-        //    return;
-        //}
-
         GameObject bread = Instantiate(breadPrefab, breadSpawnPos, Quaternion.Euler(0f, 90f, 0f));
         currentBreadCount++;
+
+        StartCoroutine(BakeNotify(bread));
         StartCoroutine(MoveBreadToBasket(bread));
+    }
+
+    IEnumerator BakeNotify(GameObject bread)
+    {
+        yield return new WaitForSeconds(1f);
         EventManager.BreadBaked(bread);
     }
 
@@ -63,6 +64,14 @@ public class Oven : MonoBehaviour
         }
 
         breadRB.isKinematic = false;
+
+    }
+
+    bool isBreadStable(GameObject bread)
+    {
+        Rigidbody breadRB = bread.GetComponent<Rigidbody>();
+        return breadRB.velocity.magnitude < 0.01f
+            && breadRB.angularVelocity.magnitude < 0.01f;
     }
 
     private void OnTriggerEnter(Collider other)

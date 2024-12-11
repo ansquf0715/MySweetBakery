@@ -6,7 +6,6 @@ using UnityEngine.EventSystems;
 public class InputManager : MonoBehaviour
 {
     public Transform player;
-    //public GameObject player;
     Player playerScript;
 
     Canvas canvas;

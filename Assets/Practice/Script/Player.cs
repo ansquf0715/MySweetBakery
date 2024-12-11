@@ -116,26 +116,24 @@ public class Player : MonoBehaviour
             return;
         }
 
-        //int breadsToReceive = 0;
-        //if (receivedBreads.Count <= remainingSpace)
-        //{
-        //    breadsToReceive = receivedBreads.Count;
-        //}
-        //else
-        //{
-        //    breadsToReceive = remainingSpace;
-        //}
-
-        foreach (GameObject bread in receivedBreads)
+        foreach(GameObject bread in receivedBreads)
         {
-            bread.transform.parent = breadSlot;
-
-            bread.transform.localPosition = new Vector3(0, breadHeight * breadSlot.childCount, 0);
-            bread.transform.localEulerAngles = Vector3.zero;
-
-            breads.Add(bread);
+            if(breads.Count < maxBreadCount)
+            {
+                bread.transform.parent = breadSlot;
+                bread.transform.localPosition = new Vector3(0, breadHeight * breads.Count, 0);
+                bread.transform.localEulerAngles = Vector3.zero;
+                breads.Add(bread);
+            }
+            else
+            {
+                Debug.Log("자리 없어어어어");
+                break;
+            }
         }
-  
+
+        state = State.StackIdle;
+        UpdateAnimation();
         hasRequestedBread = false;
     }
 
