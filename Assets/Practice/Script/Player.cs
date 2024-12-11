@@ -55,6 +55,9 @@ public class Player : MonoBehaviour
         EventManager.OnPlayerNearOven += nearOvenStatus;
         //빵을 주는지 알도록
         EventManager.OnPlayerReceiveBreads += ReceiveBreads;
+
+        //sell box가 빵을 달라고 요청하는지
+        EventManager.OnSellBoxRequestBread += ReceiveSellBoxBreadRequest;
     }
 
     // Update is called once per frame
@@ -161,11 +164,38 @@ public class Player : MonoBehaviour
             // 플레이어의 월드 좌표를 화면 좌표로 변환
             Vector3 screenPosition = Camera.main.WorldToScreenPoint(breadSlot.position + new Vector3(0, (breadHeight * breads.Count + 1), 0));
 
-            // 화면 좌표에서 플레이어 위쪽으로 텍스트를 약간 올리기 위해 Y축에 오프셋 추가
-            //Vector3 breadTopPosition = breadSlot.position + new Vector3(0, breadHeight * breads.Count, 0);
-            // 화면 좌표를 RectTransform의 위치로 변환
             RectTransform rectTransform = maxText.GetComponent<RectTransform>();
             rectTransform.position = screenPosition;
         }
     }
+
+    void HideMaxText()
+    {
+        maxText.gameObject.SetActive(false);
+    }
+
+    void ReceiveSellBoxBreadRequest(int amount)
+    {
+        Debug.Log("sellbox에서 " + amount);
+        List<GameObject> breadsToGive = new List<GameObject>();
+
+        int breadCountToGive;
+        if(amount < breads.Count)
+            breadCountToGive = amount;
+        else
+            breadCountToGive = breads.Count;
+
+        for(int i=0; i<breadCountToGive; i++)
+        {
+            GameObject bread = breads[breads.Count - 1];
+            breadsToGive.Add(bread);
+            breads.RemoveAt(breads.Count - 1);
+        }
+
+        EventManager.PlayerGiveBreadToSellBox(breadsToGive);
+
+        if (breads.Count < maxBreadCount)
+            HideMaxText();
+    }
+
 }

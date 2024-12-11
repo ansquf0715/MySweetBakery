@@ -8,6 +8,10 @@ public class Oven : MonoBehaviour
     public Transform basket;
     Collider basketCol;
 
+    public ParticleSystem bakeParticlePrefab;
+    //ParticleSystem bakeParticle;
+    ParticleSystem bakeParticle;
+
     [SerializeField]
     int maxBreadCount = 10;
     int currentBreadCount = 0;
@@ -24,6 +28,9 @@ public class Oven : MonoBehaviour
         basket = transform.Find("Basket");
         basketCol = basket.GetComponent<Collider>();
 
+        bakeParticle = transform.Find("BakeParticle").GetComponent<ParticleSystem>();
+        bakeParticle.Pause();
+
         EventManager.OnRequestBake += Bake;
     }
 
@@ -35,6 +42,10 @@ public class Oven : MonoBehaviour
 
     void Bake()
     {
+        bakeParticle = Instantiate(bakeParticlePrefab, new Vector3(5f, 2f, -5f), Quaternion.identity);
+        bakeParticle.time = 5f;
+        bakeParticle.Play();
+
         GameObject bread = Instantiate(breadPrefab, breadSpawnPos, Quaternion.Euler(0f, 90f, 0f));
         currentBreadCount++;
 
@@ -46,6 +57,7 @@ public class Oven : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         EventManager.BreadBaked(bread);
+        Destroy(bakeParticle.gameObject);
     }
 
     IEnumerator MoveBreadToBasket(GameObject bread)

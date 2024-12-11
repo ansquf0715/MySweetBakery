@@ -25,11 +25,20 @@ public class OvenBasket : MonoBehaviour
 
     IEnumerator RequestBreads()
     {
-        while (currentBreadCount <= maxBreadCount)
+        //while (currentBreadCount <= maxBreadCount)
+        //{
+        //    EventManager.RequestBread();
+        //    currentBreadCount++;
+        //    yield return new WaitForSeconds(1f);
+        //}
+        while(true)
         {
-            EventManager.RequestBread();
-            currentBreadCount++;
-            yield return new WaitForSeconds(1f);
+            if(currentBreadCount < maxBreadCount)
+            {
+                EventManager.RequestBread();
+                currentBreadCount++;
+            }
+            yield return new WaitForSeconds (1f);
         }
     }
 
