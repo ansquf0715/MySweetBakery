@@ -3,113 +3,90 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public enum CustomerState
-{
-    Idle,
-    GetBread,
-    CheckOut,
-    LeaveStore,
-    RequestSeat,
-};
+//public enum CustomerState
+//{
+//    CheckOut,
+//    LeaveStore,
+//    RequestSeat,
+//};
 
 public class Customer : MonoBehaviour
 {
-    CustomerState currentState;
-    CustomerManager manager;
+    public NavMeshAgent agent {  get; private set; }
+    public Animator animator { get; private set; }
 
-    NavMeshAgent agent;
-    Animator animator;
+    public ICustomerState currentState;
+    public CustomerManager manager { get; private set; }
 
-    //public Transform breadStand;
-
-    public List<Transform> customerPositions = new List<Transform>();
-
-    float moveSpeed = 2f;
+    public IdleState idleState;
+    public GetBreadState getBreadState;
+    public CheckOutState checkOutState;
+    public LeaveStoreState leaveStoreState;
+    public RequestSeatState requestSeatState;
 
     bool stateChanged = false;
+
+    int currentBreadCount = 0;
+    public List<GameObject> breads = new List<GameObject>();
 
     // Start is called before the first frame update
     void Start()
     {
-        manager = FindObjectOfType<CustomerManager>();
-
         agent = GetComponent<NavMeshAgent>();
-        agent.speed = moveSpeed;
         animator = GetComponent<Animator>();
 
-        currentState = CustomerState.Idle;
-        StartCoroutine(ChangeToGetBread());
+        manager = FindObjectOfType<CustomerManager>();
+
+        idleState = new IdleState(this);
+        getBreadState = new GetBreadState(this);
+        checkOutState = new CheckOutState(this);
+        leaveStoreState = new LeaveStoreState();
+        requestSeatState = new RequestSeatState();
+
+        ChangeState(idleState);
     }
 
     // Update is called once per frame
     void Update()
     {
-        Debug.Log("Current State" + currentState);
         if(stateChanged)
         {
-            checkState();
+            currentState.Execute();
             stateChanged = false;
         }
-
         UpdateAnimation();
     }
 
-    IEnumerator ChangeToGetBread()
+    public void ChangeState(ICustomerState newState)
     {
-        yield return new WaitForSeconds(1f);
-        changeState(CustomerState.GetBread);
-    }
-
-    void changeState(CustomerState newState)
-    {
-        if(currentState != newState)
-        {
-            currentState = newState;
-            stateChanged = true;
-        }
-    }
-
-    void checkState()
-    {
-        switch(currentState)
-        {
-            case CustomerState.Idle:
-                break;
-            case CustomerState.GetBread:
-                MoveToBreadStand();
-                break;
-            case CustomerState.CheckOut:
-                break;
-            case CustomerState.LeaveStore:
-                break;
-            case CustomerState.RequestSeat:
-                break;
-        }
-    }
-
-    void MoveToBreadStand()
-    {
-        currentState = CustomerState.GetBread;
-        Transform assignedPos = manager.AssignBreadPositionToCustomer();
-        if(assignedPos != null)
-        {
-            agent.SetDestination(assignedPos.position);
-        }
-        else
-        {
-            Debug.Log("갈자리없음");
-        }
+        currentState?.Exit();
+        currentState = newState;
+        currentState.Enter();
+        stateChanged = true;
     }
 
     void UpdateAnimation()
     {
-        if(agent.velocity.magnitude > 0.1f)
+        bool isMoving = agent.velocity.magnitude > 0.1f;
+        if(breads.Count > 0)
         {
-            animator.SetBool("isMoving", true);
+            if (isMoving)
+                animator.SetInteger("State", 3);
+            else
+                animator.SetInteger("State", 2);
         }
         else
         {
-            animator.SetBool("isMoving", false);
+            if (isMoving)
+                animator.SetInteger("State", 1);
+            else
+                animator.SetInteger("State", 0);
         }
+    }
+
+    public void SetBreads(List<GameObject> receivedBreads)
+    {
+        breads.AddRange(receivedBreads);
+        currentBreadCount += receivedBreads.Count;
     }
 }

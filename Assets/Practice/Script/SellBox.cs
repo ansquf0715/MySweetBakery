@@ -14,12 +14,16 @@ public class SellBox : MonoBehaviour
     int currentBreadCount = 0;
 
     bool nearPlayer = false;
+    bool nearCustomer = false;
 
     // Start is called before the first frame update
     void Start()
     {
         breadSlot = transform.Find("BreadSortSlot");
         EventManager.OnPlayerGiveBreadToSellBox += ReceiveBreadFromPlayer;
+        EventManager.OnCustomerRequestToSellBox += checkCustomerRequest;
+
+
     }
 
     // Update is called once per frame
@@ -27,10 +31,6 @@ public class SellBox : MonoBehaviour
     {
         if (nearPlayer && currentBreadCount < maxBreadCount)
             StartCoroutine(RequestBreadCoroutine());
-        //else
-        //{
-        //    StopCoroutine (RequestBreadCoroutine());
-        //}
     }
 
     IEnumerator RequestBreadCoroutine()
@@ -100,6 +100,26 @@ public class SellBox : MonoBehaviour
         bread.transform.position = targetPos;
         bread.transform.rotation = Quaternion.Euler(0, 0, 0);
         bread.transform.SetParent(breadSlot);
+    }
+
+    void checkCustomerRequest(int count)
+    {
+        if(count <= breads.Count)
+        {
+            List<GameObject> breadsToGive = new List<GameObject>();
+            for(int i=0; i<count; i++)
+            {
+                GameObject bread = breads[breads.Count-1];
+                breadsToGive.Add(bread);
+                breads.RemoveAt(breads.Count-1);
+            }
+            EventManager.CustomerReceiveBreads(breadsToGive);
+        }
+        else
+        {
+            Debug.Log("Not enough breads available");
+            EventManager.SellboxHaveNotEnoughBread();
+        }
     }
 
 }

@@ -335,7 +335,7 @@ GameObject:
   - component: {fileID: 1520707288828933673}
   m_Layer: 10
   m_Name: Customer
-  m_TagString: Untagged
+  m_TagString: Customer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -389,7 +389,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9332a3200713804a8f44b29dd58b003, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customerPositions: []
+  orderBread: {fileID: 0}
 --- !u!195 &1520707288828933673
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Bread
   - Floor
+  - Customer
   layers:
   - Default
   - TransparentFX
