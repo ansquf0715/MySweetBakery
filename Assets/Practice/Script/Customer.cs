@@ -30,6 +30,8 @@ public class Customer : MonoBehaviour
     int currentBreadCount = 0;
     public List<GameObject> breads = new List<GameObject>();
 
+    GameObject bag;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -42,10 +44,12 @@ public class Customer : MonoBehaviour
         idleState = new IdleState(this);
         getBreadState = new GetBreadState(this);
         checkOutState = new CheckOutState(this);
-        leaveStoreState = new LeaveStoreState();
+        leaveStoreState = new LeaveStoreState(this);
         requestSeatState = new RequestSeatState();
 
         ChangeState(idleState);
+
+        bag = null;
     }
 
     // Update is called once per frame
@@ -70,7 +74,7 @@ public class Customer : MonoBehaviour
     void UpdateAnimation()
     {
         bool isMoving = agent.velocity.magnitude > 0.1f;
-        if(breads.Count > 0)
+        if(breads.Count > 0 || bag != null)
         {
             if (isMoving)
                 animator.SetInteger("State", 3);
@@ -86,9 +90,37 @@ public class Customer : MonoBehaviour
         }
     }
 
+    public void GetBag(GameObject bag)
+    {
+        if(currentState == checkOutState)
+        {
+            checkOutState.GetBag(bag);
+            this.bag = bag;
+        }
+    }
+
     public void SetBreads(List<GameObject> receivedBreads)
     {
         breads.AddRange(receivedBreads);
         currentBreadCount += receivedBreads.Count;
+    }
+
+    public List<GameObject> GetBreads()
+    {
+        return breads;
+    }
+
+    public void RemoveBread(GameObject bread)
+    {
+        if(breads.Contains(bread))
+        {
+            breads.Remove(bread);
+            currentBreadCount--;
+        }
+    }
+
+    public Vector3 GetBreadStackPoint()
+    {
+        return transform.Find("BreadStackPoint").position;
     }
 }

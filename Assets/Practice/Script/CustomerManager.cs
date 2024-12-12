@@ -44,19 +44,18 @@ public class CustomerManager : MonoBehaviour
         return null;
     }
 
-    //public Quaternion GetBreadRotation()
-    //{
-    //}
-
     //고객이 bread pos를 떠나면, 기다리고 있는 customer에게 연락하기
 
-    public void AddCounterCustomer(Customer customer)
-    {
-        checkOutQueue.Enqueue(customer);
-    }
+    //public void AddCounterCustomer(Customer customer)
+    //{
+    //    checkOutQueue.Enqueue(customer);
+    //    EventManager.CustomerAtCounter(customer);
+    //}
 
     public Vector3 AssignCounterPositionToCustomer(Customer customer)
     {
+        checkOutQueue.Enqueue(customer);
+        EventManager.CustomerAtCounter(customer);
         int customerIndex = GetCustomerQueueIndex(customer);
 
         if(customerIndex == -1)
@@ -70,7 +69,8 @@ public class CustomerManager : MonoBehaviour
         newPos.y = customerCounterPos.position.y;
         newPos.z = customerCounterPos.position.z;
 
-        Debug.Log("newPos" + newPos);
+        //checkOutQueue.Dequeue();
+        //Debug.Log("newPos" + newPos);
         return newPos;
     }
 
@@ -85,4 +85,47 @@ public class CustomerManager : MonoBehaviour
         }
         return -1;
     }
+
+    public void customerArrivedAtCounter(Customer customer)
+    {
+        Queue<Customer> newQueue = new Queue<Customer>();
+        foreach(var c in checkOutQueue)
+        {
+            if (c != customer)
+            {
+                newQueue.Enqueue(c);
+            }
+        }
+        checkOutQueue = newQueue;
+
+        //moveRestCustomers(customer);
+        StartCoroutine(DelayMoveCustomers(customer));
+    }
+
+    IEnumerator DelayMoveCustomers(Customer customer)
+    {
+        yield return new WaitForSeconds(1f);
+
+        moveRestCustomers(customer);
+    }
+
+    void moveRestCustomers(Customer customer)
+    {
+        int index = 0;
+        foreach (var c in checkOutQueue)
+        {
+            // 새로 계산된 위치로 고객 이동
+            //Vector3 newPos = customerCounterPos.position;
+            //newPos.x = customerCounterPos.position.x + (index * 1.2f);
+            //newPos.y = customerCounterPos.position.y;
+            //newPos.z = customerCounterPos.position.z;
+
+            //// 고객의 위치 업데이트
+            //c.transform.position = newPos;
+            Vector3 newPos = c.transform.position;
+            newPos.x = newPos.x + (index * 1.2f);
+            index++;
+        }
+    }
+
 }

@@ -517,7 +517,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &228178679
 PrefabInstance:
@@ -3498,7 +3498,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4541141870242516323, guid: 7d7589d2636d44e64a0446841792863e, type: 3}
       propertyPath: m_RootOrder
-      value: 12
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 4541141870242516323, guid: 7d7589d2636d44e64a0446841792863e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3880,8 +3880,21 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 2.4724178, y: 0.89273, z: 1.013843}
-  m_Center: {x: 2.3259592e-15, y: 0.446365, z: 1.3636183}
+  m_Size: {x: 2.4756167, y: 0.89273, z: 1.5059254}
+  m_Center: {x: 0.001599566, y: 0.446365, z: 1.6096596}
+--- !u!114 &1687173135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1687173127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7c8b72d0a4baf74681fffab6fc643fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bagPrefab: {fileID: 1475244874789685451, guid: 5f3a83b985d174ecf846edb7c0a3b4ae, type: 3}
 --- !u!1 &1698162219
 GameObject:
   m_ObjectHideFlags: 0

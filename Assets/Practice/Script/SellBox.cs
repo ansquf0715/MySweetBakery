@@ -81,7 +81,7 @@ public class SellBox : MonoBehaviour
         }
         if (other.gameObject.CompareTag("Customer"))
         {
-            Debug.Log("customer");
+            //Debug.Log("customer");
             Customer cust = other.gameObject.GetComponent<Customer>();
             enteredCustomer.Enqueue(cust);
         }
