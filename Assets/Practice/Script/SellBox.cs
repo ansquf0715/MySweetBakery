@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,16 +15,14 @@ public class SellBox : MonoBehaviour
     int currentBreadCount = 0;
 
     bool nearPlayer = false;
-    bool nearCustomer = false;
+    bool isProcessingCustomer = false;
+    Queue<Customer> enteredCustomer = new Queue<Customer>();
 
     // Start is called before the first frame update
     void Start()
     {
         breadSlot = transform.Find("BreadSortSlot");
         EventManager.OnPlayerGiveBreadToSellBox += ReceiveBreadFromPlayer;
-        EventManager.OnCustomerRequestToSellBox += checkCustomerRequest;
-
-
     }
 
     // Update is called once per frame
@@ -31,11 +30,43 @@ public class SellBox : MonoBehaviour
     {
         if (nearPlayer && currentBreadCount < maxBreadCount)
             StartCoroutine(RequestBreadCoroutine());
+        if (enteredCustomer.Count > 0)
+            StartCoroutine(ProcessCustomerRequest());
+    }
+
+
+    IEnumerator ProcessCustomerRequest()
+    {
+        isProcessingCustomer = true;
+
+        Customer customer = enteredCustomer.Peek();
+        //int requestBreadCount = customer.RequestBreadCount();
+        int requestBreadCount = customer.getBreadState.RequestBreadCount();
+
+        if (currentBreadCount >= requestBreadCount)
+        {
+            List<GameObject> breadsToGive = new List<GameObject>();
+            for (int i = 0; i < requestBreadCount; i++)
+            {
+                breadsToGive.Add(breads[0]);
+                breads.RemoveAt(0);
+            }
+            currentBreadCount -= requestBreadCount;
+
+            //customer.ReceiveBreads(breadsToGive);
+            customer.getBreadState.ReceiveBreads(breadsToGive);
+            enteredCustomer.Dequeue();
+        }
+        else
+        {
+            yield return new WaitForSeconds(1f);
+        }
+        isProcessingCustomer = false;
     }
 
     IEnumerator RequestBreadCoroutine()
     {
-        while(nearPlayer && currentBreadCount < maxBreadCount)
+        while (nearPlayer && currentBreadCount < maxBreadCount)
         {
             EventManager.SellBoxRequestBread();
             yield return new WaitForSeconds(1f);
@@ -47,6 +78,12 @@ public class SellBox : MonoBehaviour
         if(other.gameObject.CompareTag("Player"))
         {
             nearPlayer = true;
+        }
+        if (other.gameObject.CompareTag("Customer"))
+        {
+            Debug.Log("customer");
+            Customer cust = other.gameObject.GetComponent<Customer>();
+            enteredCustomer.Enqueue(cust);
         }
     }
 
@@ -100,26 +137,6 @@ public class SellBox : MonoBehaviour
         bread.transform.position = targetPos;
         bread.transform.rotation = Quaternion.Euler(0, 0, 0);
         bread.transform.SetParent(breadSlot);
-    }
-
-    void checkCustomerRequest(int count)
-    {
-        if(count <= breads.Count)
-        {
-            List<GameObject> breadsToGive = new List<GameObject>();
-            for(int i=0; i<count; i++)
-            {
-                GameObject bread = breads[breads.Count-1];
-                breadsToGive.Add(bread);
-                breads.RemoveAt(breads.Count-1);
-            }
-            EventManager.CustomerReceiveBreads(breadsToGive);
-        }
-        else
-        {
-            Debug.Log("Not enough breads available");
-            EventManager.SellboxHaveNotEnoughBread();
-        }
     }
 
 }

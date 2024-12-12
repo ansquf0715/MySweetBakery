@@ -17,6 +17,7 @@ public class Customer : MonoBehaviour
 
     public ICustomerState currentState;
     public CustomerManager manager { get; private set; }
+    //public EventManager eventManager { get; private set; }
 
     public IdleState idleState;
     public GetBreadState getBreadState;
@@ -36,6 +37,7 @@ public class Customer : MonoBehaviour
         animator = GetComponent<Animator>();
 
         manager = FindObjectOfType<CustomerManager>();
+        //eventManager = FindObjectOfType<EventManager>();
 
         idleState = new IdleState(this);
         getBreadState = new GetBreadState(this);

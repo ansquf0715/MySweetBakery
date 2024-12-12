@@ -15,10 +15,10 @@ public class EventManager : MonoBehaviour
     public static event Action OnSellBoxRequestBread; //sellbox가 player한테 빵 달라고 요청
     public static event Action<GameObject> OnPlayerGiveBreadToSellBox; //player가 sellbox에 빵을 줌
 
-    public static event Action<int> OnCustomerRequestToSellBox; //customer가 sellbox에서 빵 달라고 요청
-    public static event Action OnSellboxHaveNotEnoughBread; //sellbox에 충분한 빵이 없을 때
-    public static event Action<List<GameObject>> OnCustomerReceiveBreads; //customer가 sellbox에서 빵을 가져감
-    
+    public event Action<Customer, int> OnCustomerRequestToSellBox; //customer가 sellbox에게 빵 달라고 요청
+    public event Action<Customer, List<GameObject>> OnCustomerReceiveBread; //sellbox가 빵 줄 수 있으면 줌
+    public event Action<Customer> OnSellboxHaveNotEnoughBread; //sellbox가 빵 없다고 전달
+
     public static void RequestBread()
     {
         OnRequestBake?.Invoke();
@@ -54,18 +54,18 @@ public class EventManager : MonoBehaviour
         OnPlayerGiveBreadToSellBox?.Invoke(bread);
     }
 
-    public static void CustomerRequestToSellBox(int count)
+    public void CustomerRequestToSellBox(Customer customer, int count)
     {
-        OnCustomerRequestToSellBox?.Invoke(count);
+        OnCustomerRequestToSellBox?.Invoke(customer, count);
     }
 
-    public static void SellboxHaveNotEnoughBread()
+    public void CustomerReceiveBread(Customer customer, List<GameObject> breads)
     {
-        OnSellboxHaveNotEnoughBread?.Invoke();
+        OnCustomerReceiveBread?.Invoke(customer, breads);
     }
 
-    public static void CustomerReceiveBreads(List<GameObject> breads)
+    public void SellboxHaveNotEnoughBread(Customer customer)
     {
-        OnCustomerReceiveBreads?.Invoke(breads);
+        OnSellboxHaveNotEnoughBread?.Invoke(customer);
     }
 }

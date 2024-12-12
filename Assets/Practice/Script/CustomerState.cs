@@ -41,7 +41,7 @@ public class GetBreadState : ICustomerState
     CustomerManager manager;
 
     int requestBreadCount;
-    //Transform breadStackPoint;
+    Transform assignedBreadPos;
 
     public GetBreadState(Customer customer)
     {
@@ -51,9 +51,7 @@ public class GetBreadState : ICustomerState
     }
     public void Enter() 
     {
-        EventManager.OnCustomerReceiveBreads += ReceiveBreads;
-        EventManager.OnSellboxHaveNotEnoughBread += RetryRequestBread;
-
+        decideRequestBread();
         MoveToBreadStand();
     }
     public void Execute() 
@@ -61,12 +59,19 @@ public class GetBreadState : ICustomerState
     }
     public void Exit() 
     {
-        EventManager.OnSellboxHaveNotEnoughBread -= RetryRequestBread;
+
+    }
+
+    void decideRequestBread()
+    {
+        requestBreadCount = Random.Range(1, 4);
+        Debug.Log("»§ °¹¼ö" + requestBreadCount);
     }
 
     public void MoveToBreadStand()
     {
         Transform assignedPos = manager.AssignBreadPositionToCustomer();
+        assignedBreadPos = assignedPos;
         if(assignedPos != null)
         {
             agent.SetDestination(assignedPos.position);
@@ -89,14 +94,40 @@ public class GetBreadState : ICustomerState
 
     void ArriveAtBreadStand()
     {
-        //int breadCount = Random.Range(1, 4);
-        requestBreadCount = Random.Range(1, 4);
-        Debug.Log("°í¸¥ »§ÀÇ °¹¼ö" + requestBreadCount);
-
-        EventManager.CustomerRequestToSellBox(requestBreadCount);
+        customer.StartCoroutine(rotateToTarget());
     }
 
-    void ReceiveBreads(List<GameObject> receivedBreads)
+    IEnumerator rotateToTarget()
+    {
+        float rotationSpeed = 2f;
+
+        Quaternion targetRot = assignedBreadPos.rotation;
+        float elapsed = 0f;
+        float duration = 1f;
+
+        while(elapsed < duration)
+        {
+            customer.transform.rotation = Quaternion.Slerp(customer.transform.rotation,
+                targetRot, (elapsed/duration));
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        customer.transform.rotation = targetRot;
+
+        RequestBreadCount();
+    }
+
+    void receiveBreads(Customer customer, List<GameObject> receivedBreads)
+    {
+        customer.StartCoroutine(MoveBreadsToStack(receivedBreads));
+    }
+
+    public int RequestBreadCount()
+    {
+        return requestBreadCount;
+    }
+
+    public void ReceiveBreads(List<GameObject> receivedBreads)
     {
         customer.StartCoroutine(MoveBreadsToStack(receivedBreads));
     }
@@ -108,7 +139,7 @@ public class GetBreadState : ICustomerState
         float breadHeight = 0.3f;
         //float moveDuration = 0.5f;
 
-        for(int i=0; i<receivedBreads.Count; i++)
+        for (int i = 0; i < receivedBreads.Count; i++)
         {
             GameObject bread = receivedBreads[i];
             Vector3 startPos = bread.transform.position;
@@ -118,7 +149,7 @@ public class GetBreadState : ICustomerState
             float duration = 0.5f;
             float elapsed = 0f;
 
-            while(elapsed < duration)
+            while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
                 bread.transform.position = Vector3.Lerp(startPos, endPos, (elapsed / duration));
@@ -134,33 +165,61 @@ public class GetBreadState : ICustomerState
         customer.ChangeState(customer.checkOutState);
     }
 
-    void RetryRequestBread()
-    {
-        customer.StartCoroutine(RequestBreadAgain());
-    }
-
-    IEnumerator RequestBreadAgain()
-    {
-        yield return new WaitForSeconds(1f);
-        EventManager.CustomerRequestToSellBox(requestBreadCount);
-    }
-
-
 }
 
 public class CheckOutState : ICustomerState
 {
     Customer customer;
+    NavMeshAgent agent;
+    CustomerManager manager;
 
     public CheckOutState(Customer customer)
     {
-        Debug.Log("check out state »ý¼ºÀÚ");
         this.customer = customer;
+        this.agent = customer.agent;
+        this.manager = customer.manager;
     }
 
-    public void Enter() { }
+    public void Enter() 
+    {
+        manager.AddCounterCustomer(customer);
+        MoveToCounter();
+    }
     public void Execute() { }
     public void Exit() { }
+
+    void MoveToCounter()
+    {
+        Vector3 counterPos = manager.AssignCounterPositionToCustomer(customer);
+        Debug.Log("counter pos" + counterPos);
+        agent.SetDestination(counterPos);
+        customer.StartCoroutine(WaitForArrival());
+    }
+
+    IEnumerator WaitForArrival()
+    {
+        yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
+        && !agent.pathPending);
+
+        customer.StartCoroutine(RotateToTarget());
+    }
+
+    IEnumerator RotateToTarget()
+    {
+        float rotatioinSpeed = 2f;
+        Quaternion targetRot = Quaternion.Euler(0, 90, 0);
+        float elapsed = 0f;
+        float duration = 1f;
+
+        while(elapsed < duration)
+        {
+            customer.transform.rotation = Quaternion.Slerp(customer.transform.rotation,
+                targetRot, (elapsed / duration));
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        customer.transform.rotation = targetRot;
+    }
 }
 
 public class LeaveStoreState : ICustomerState
