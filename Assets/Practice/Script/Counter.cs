@@ -62,7 +62,7 @@ public class Counter : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             playerIsCashing = true;
-            Debug.Log("player is cashing" +  playerIsCashing);
+            //Debug.Log("player is cashing" +  playerIsCashing);
             //if (waitingCustomers.Count > 0)
             //{
             //    playerIsCashing = true;
@@ -86,7 +86,7 @@ public class Counter : MonoBehaviour
 
     void checkingOut()
     {
-        Debug.Log("checking out");
+        //Debug.Log("checking out");
 
         alreadyCashedCustomer = true;
 
@@ -168,7 +168,7 @@ public class Counter : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
 
-        Debug.Log("delay checking out");
+        //Debug.Log("delay checking out");
         cashingCustomer.SetCustomerCheckOutEnd();
         bag = null;
         cashingCustomer = null;

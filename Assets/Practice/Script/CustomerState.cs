@@ -21,6 +21,7 @@ public class IdleState : ICustomerState
     }
     public void Enter() 
     {
+        //Debug.Log("Enter");
         customer.StartCoroutine(WaitForGetBread());
     }
 
@@ -59,7 +60,7 @@ public class GetBreadState : ICustomerState
     }
     public void Exit() 
     {
-
+        manager.LeavingBreadPos(customer);
     }
 
     void decideRequestBread()
@@ -71,10 +72,11 @@ public class GetBreadState : ICustomerState
 
     public void MoveToBreadStand()
     {
-        Transform assignedPos = manager.AssignBreadPositionToCustomer();
+        Transform assignedPos = manager.AssignBreadPositionToCustomer(customer);
         assignedBreadPos = assignedPos;
         if(assignedPos != null)
         {
+            //Debug.Log("assigned POs" + assignedPos.position);
             agent.SetDestination(assignedPos.position);
             agent.isStopped = false;
 
@@ -88,8 +90,12 @@ public class GetBreadState : ICustomerState
 
     IEnumerator WaitForCustomerArrive()
     {
-        yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
-        && !agent.pathPending);
+        //yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
+        //&& !agent.pathPending);
+        yield return new WaitUntil(() =>
+        !agent.pathPending && agent.remainingDistance <= 0.2f);
+
+        agent.isStopped = true;
         ArriveAtBreadStand();
     }
 
@@ -186,6 +192,7 @@ public class CheckOutState : ICustomerState
     public void Enter() 
     {
         checkOutEnded = false;
+        agent.isStopped = false;
         MoveToCounter();
     }
     public void Execute() 
@@ -268,6 +275,7 @@ public class CheckOutState : ICustomerState
         bag.transform.position = breadStackPoint.position;
 
         yield return new WaitForSeconds(0.5f);
+        manager.addHandledCustomer();
         checkOutEnded = true;
     }
 

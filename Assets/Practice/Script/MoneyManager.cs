@@ -21,6 +21,7 @@ public class MoneyManager : MonoBehaviour
     public TextMeshProUGUI moneyText;
 
     bool playerIsGettingCash = false;
+    bool makeEventToQuest = false;
 
     // Start is called before the first frame update
     void Start()
@@ -33,7 +34,11 @@ public class MoneyManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //if(money >= 10 && !makeEventToQuest)
+        //{
+        //    EventManager.QuestMoneyIsReady();
+        //    makeEventToQuest = false;
+        //}
     }
 
     private void OnTriggerEnter(Collider other)
@@ -147,6 +152,11 @@ public class MoneyManager : MonoBehaviour
     void UpdateMoneyUI()
     {
         moneyText.text = money.ToString();
+    }
+
+    public int getMoney()
+    {
+        return money;
     }
 
 }

@@ -129,6 +129,6 @@ public class Customer : MonoBehaviour
     public void SetCustomerCheckOutEnd()
     {
         checkOutState.checkOutEnded = true;
-        Debug.Log("CheckOutState. checkoutended" +  checkOutState.checkOutEnded);
+        //Debug.Log("CheckOutState. checkoutended" +  checkOutState.checkOutEnded);
     }
 }
