@@ -60,7 +60,7 @@ public class Customer : MonoBehaviour
         if(stateChanged)
         {
             currentState.Execute();
-            stateChanged = false;
+            //stateChanged = false;
         }
         UpdateAnimation();
     }
@@ -124,5 +124,11 @@ public class Customer : MonoBehaviour
     public Vector3 GetBreadStackPoint()
     {
         return transform.Find("BreadStackPoint").position;
+    }
+
+    public void SetCustomerCheckOutEnd()
+    {
+        checkOutState.checkOutEnded = true;
+        Debug.Log("CheckOutState. checkoutended" +  checkOutState.checkOutEnded);
     }
 }

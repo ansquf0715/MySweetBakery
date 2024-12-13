@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class CustomerManager : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class CustomerManager : MonoBehaviour
 
     //계산대 대기줄은 이걸 기준으로 x값만 조절해주면 됨
     public Transform customerCounterPos;
-    float counterSpacing = 4f;
+    float counterSpacing = 1.5f;
     Queue<Customer> checkOutQueue = new Queue<Customer>();
 
     List<Customer> allCustomers = new List<Customer>();
@@ -68,9 +69,6 @@ public class CustomerManager : MonoBehaviour
         newPos.x = customerCounterPos.position.x - (customerIndex * 1.2f);
         newPos.y = customerCounterPos.position.y;
         newPos.z = customerCounterPos.position.z;
-
-        //checkOutQueue.Dequeue();
-        //Debug.Log("newPos" + newPos);
         return newPos;
     }
 
@@ -88,23 +86,12 @@ public class CustomerManager : MonoBehaviour
 
     public void customerArrivedAtCounter(Customer customer)
     {
-        Queue<Customer> newQueue = new Queue<Customer>();
-        foreach(var c in checkOutQueue)
-        {
-            if (c != customer)
-            {
-                newQueue.Enqueue(c);
-            }
-        }
-        checkOutQueue = newQueue;
-
-        //moveRestCustomers(customer);
         StartCoroutine(DelayMoveCustomers(customer));
     }
 
     IEnumerator DelayMoveCustomers(Customer customer)
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
 
         moveRestCustomers(customer);
     }
@@ -114,18 +101,45 @@ public class CustomerManager : MonoBehaviour
         int index = 0;
         foreach (var c in checkOutQueue)
         {
-            // 새로 계산된 위치로 고객 이동
-            //Vector3 newPos = customerCounterPos.position;
-            //newPos.x = customerCounterPos.position.x + (index * 1.2f);
-            //newPos.y = customerCounterPos.position.y;
-            //newPos.z = customerCounterPos.position.z;
+            if (c == customer)
+                continue;
 
-            //// 고객의 위치 업데이트
-            //c.transform.position = newPos;
-            Vector3 newPos = c.transform.position;
-            newPos.x = newPos.x + (index * 1.2f);
+            Vector3 newPos = customerCounterPos.position - new Vector3(
+                index * counterSpacing, 0, 0f);
+
+            StartCoroutine(CheckNextCustomerArrive(c, newPos));
+
             index++;
+
+            StartCoroutine(delay());
         }
+
     }
 
+    IEnumerator delay()
+    {
+        yield return new WaitForSeconds(1f);
+    }
+
+    IEnumerator CheckNextCustomerArrive(Customer customer, Vector3 targetPos)
+    {
+        while (Vector3.Distance(customer.transform.position, targetPos) > 0.1f)
+        {
+            customer.transform.position = Vector3.MoveTowards(customer.transform.position, targetPos, Time.deltaTime);
+            yield return null;
+        }
+        yield return new WaitForSeconds(1f);
+    }
+
+    public void customerEndedCheckout(Customer customer)
+    {
+        Queue<Customer> newQ = new Queue<Customer>();
+        foreach(var c in checkOutQueue)
+        {
+            if(c!=customer)
+                newQ.Enqueue(c);
+        }
+        checkOutQueue = newQ;
+        customerArrivedAtCounter(customer);
+    }
 }

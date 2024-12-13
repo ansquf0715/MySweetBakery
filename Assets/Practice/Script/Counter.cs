@@ -6,8 +6,10 @@ public class Counter : MonoBehaviour
 {
     public GameObject bagPrefab;
 
-    Queue<Customer> waitingCustomers = new Queue<Customer>();
+    //Queue<Customer> waitingCustomers = new Queue<Customer>();
+    Customer cashingCustomer;
     bool playerIsCashing = false;
+    bool alreadyCashedCustomer = false;
 
     GameObject bag;
 
@@ -17,38 +19,60 @@ public class Counter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        EventManager.OnCustomerAtCounter += addCustomer;
-        //bagAnim = bagPrefab.GetComponent<Animator>();
+        //EventManager.OnCustomerAtCounter += addCustomer;
 
         boxCol = GetComponent<BoxCollider>();
         circleCol = GetComponent<SphereCollider>();
+
+        //EventManager.OnNextCustomerArrivedAtCounterPosition += handleCustomerArrival;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(playerIsCashing)
+        //if(playerIsCashing && cashingCustomer!=null)
+        //{
+        //    checkingOut();
+        //}
+
+        if(playerIsCashing && cashingCustomer != null && !alreadyCashedCustomer)
         {
             checkingOut();
+            alreadyCashedCustomer=true;
         }
     }
 
-    void addCustomer(Customer customer)
-    {
-        waitingCustomers.Enqueue(customer);
-    }
+    //void addCustomer(Customer customer)
+    //{
+    //    waitingCustomers.Enqueue(customer);
+    //}
+
+    //void handleCustomerArrival(Customer customer)
+    //{
+    //    //cashingCustomer = customer;
+    //    if (playerIsCashing && cashingCustomer != null)
+    //    {
+    //        Debug.Log("handle Customer Arriver at counter");
+    //        checkingOut();
+    //    }
+    //}
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            //playerIsCashing=true;
-            if (waitingCustomers.Count > 0)
-            {
-                playerIsCashing = true;
-            }
-            else
-                playerIsCashing = false;
+            playerIsCashing = true;
+            Debug.Log("player is cashing" +  playerIsCashing);
+            //if (waitingCustomers.Count > 0)
+            //{
+            //    playerIsCashing = true;
+            //}
+            //else
+            //    playerIsCashing = false;
+        }
+        else if(other.gameObject.CompareTag("Customer"))
+        {
+            cashingCustomer = other.gameObject.GetComponent<Customer>();
         }
     }
 
@@ -62,32 +86,29 @@ public class Counter : MonoBehaviour
 
     void checkingOut()
     {
-        if(waitingCustomers.Count > 0)
-        {
-            Customer customer = waitingCustomers.Dequeue();
-            List<GameObject> breads = customer.GetBreads();
+        Debug.Log("checking out");
 
-            bag = Instantiate(bagPrefab, new Vector3(0, 1.4f, 1.6f), Quaternion.identity);
-            Animator bagAnim = bag.GetComponent<Animator>();
-            bagAnim.SetBool("isOpen", true);
+        alreadyCashedCustomer = true;
 
-            StartCoroutine(MoveBreadsToBag(customer, breads));
-            //StartCoroutine(CustomerCashingTime(customer, breads));
-            StartCoroutine(WaitToProcessNextCustomer());
-        }
+        List<GameObject> breads = cashingCustomer.GetBreads();
 
-        playerIsCashing = false;
+        bag = Instantiate(bagPrefab,
+            new Vector3(0, 1.4f, 1.6f), Quaternion.identity);
+        Animator bagAnim = bag.GetComponent<Animator>();
+        bagAnim.SetBool("isOpen", true);
+
+        StartCoroutine(MoveBreadsToBag(breads));
     }
 
-    IEnumerator WaitToProcessNextCustomer()
-    {
-        yield return new WaitForSeconds(2f);
+    //IEnumerator WaitToProcessNextCustomer()
+    //{
+    //    yield return new WaitForSeconds(2f);
 
-        if (waitingCustomers.Count > 0)
-            playerIsCashing = true;
-    }
+    //    if (waitingCustomers.Count > 0)
+    //        playerIsCashing = true;
+    //}
 
-    IEnumerator MoveBreadsToBag(Customer customer, List<GameObject> breads)
+    IEnumerator MoveBreadsToBag(List<GameObject> breads)
     {
         //Vector3 lastBreadPos = Vector3.zero;
 
@@ -120,7 +141,8 @@ public class Counter : MonoBehaviour
             bread.transform.position = targetPos;
 
             // 绊按俊辑 户阑 力芭
-            customer.RemoveBread(bread);
+            //customer.RemoveBread(bread);
+            cashingCustomer.RemoveBread(bread);
 
             // 户 昏力
             Destroy(bread);
@@ -131,8 +153,26 @@ public class Counter : MonoBehaviour
         //StartCoroutine(GiveCustomerBag(customer));
 
         //EventManager.BagReady(bag);
-        customer.GetBag(bag);
+        //customer.GetBag(bag);
+        cashingCustomer.GetBag(bag);
+
+        //cashingCustomer.SetCustomerCheckOutEnd();
+        //bag = null;
+        //cashingCustomer = null;
+        //alreadyCashedCustomer = false;
+
+        StartCoroutine(delayCheckingOut());
+    }
+
+    IEnumerator delayCheckingOut()
+    {
+        yield return new WaitForSeconds(2f);
+
+        Debug.Log("delay checking out");
+        cashingCustomer.SetCustomerCheckOutEnd();
         bag = null;
+        cashingCustomer = null;
+        alreadyCashedCustomer = false;
     }
 
 }

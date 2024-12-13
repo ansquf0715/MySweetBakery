@@ -174,6 +174,8 @@ public class CheckOutState : ICustomerState
     NavMeshAgent agent;
     CustomerManager manager;
 
+    public bool checkOutEnded;
+
     public CheckOutState(Customer customer)
     {
         this.customer = customer;
@@ -183,22 +185,24 @@ public class CheckOutState : ICustomerState
 
     public void Enter() 
     {
-        //manager.AddCounterCustomer(customer);
+        checkOutEnded = false;
         MoveToCounter();
-
-        //EventManager.OnBagReady += GetBag;
     }
-    public void Execute() { }
+    public void Execute() 
+    {
+        if(checkOutEnded)
+        {
+            customer.ChangeState(customer.leaveStoreState);
+        }
+    }
     public void Exit() 
     {
-        //manager.customerArrivedAtCounter(customer);
-        //EventManager.OnBagReady -= GetBag;
+
     }
 
     void MoveToCounter()
     {
         Vector3 counterPos = manager.AssignCounterPositionToCustomer(customer);
-        //Debug.Log("counter pos" + counterPos);
         agent.SetDestination(counterPos);
         customer.StartCoroutine(WaitForArrival());
     }
@@ -208,12 +212,12 @@ public class CheckOutState : ICustomerState
         yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
         && !agent.pathPending);
 
+        agent.isStopped = true;
         customer.StartCoroutine(RotateToTarget());
     }
 
     IEnumerator RotateToTarget()
     {
-        //float rotatioinSpeed = 2f;
         Quaternion targetRot = Quaternion.Euler(0, 90, 0);
         float elapsed = 0f;
         float duration = 1f;
@@ -256,7 +260,6 @@ public class CheckOutState : ICustomerState
 
         while (elapsedTime < durationTime)
         {
-            // 현재 월드 좌표와 목표 월드 좌표 사이를 부드럽게 이동
             bag.transform.position = Vector3.Lerp(bagStartPos, breadStackPoint.position, (elapsedTime / durationTime));
             elapsedTime += Time.deltaTime;
             yield return null;
@@ -265,9 +268,7 @@ public class CheckOutState : ICustomerState
         bag.transform.position = breadStackPoint.position;
 
         yield return new WaitForSeconds(0.5f);
-
-        //customer-> leave할건지 자리 요구할건지 정하기
-        customer.ChangeState(customer.leaveStoreState);
+        checkOutEnded = true;
     }
 
 }
@@ -287,15 +288,14 @@ public class LeaveStoreState : ICustomerState
 
     public void Enter() 
     {
+        manager.customerEndedCheckout(customer);
+
         Debug.Log("Leave Store STate");
         EventManager.CustomerPay(customer, customer.requestBreadCount);
 
-        //manager.dequeueCounterCustomer(customer);
-        manager.customerArrivedAtCounter(customer);
-
+        agent.isStopped = false;
         Vector3 leavePos = new Vector3(-14f, 0.5f, 4f);
         agent.SetDestination(leavePos);
-        customer.StartCoroutine(WaitForArrive());
     }
     public void Execute() { }
     public void Exit() 

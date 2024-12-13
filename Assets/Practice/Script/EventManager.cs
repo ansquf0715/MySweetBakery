@@ -20,6 +20,8 @@ public class EventManager : MonoBehaviour
     //public static event Action<GameObject> OnBagReady; //계산이 완료된 빵
     public static event Action<Customer, int> OnCustomerPay; //고객이 돈을 지불했다는 이벤트
 
+    //public static event Action<Customer> OnNextCustomerArrivedAtCounterPosition;
+
     public static void SetPlayerNearOven(bool isNear)
     {
         OnPlayerNearOven?.Invoke(isNear);
@@ -54,6 +56,11 @@ public class EventManager : MonoBehaviour
     {
         OnCustomerPay?.Invoke(customer, amount);
     }
+
+    //public static void NextCustomerArrivedAtCounterPosition(Customer customer)
+    //{
+    //    OnNextCustomerArrivedAtCounterPosition(customer);
+    //}
 
     //public static void BagReady(GameObject bag)
     //{

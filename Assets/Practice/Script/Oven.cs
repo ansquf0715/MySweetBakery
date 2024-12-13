@@ -85,7 +85,7 @@ public class Oven : MonoBehaviour
         }
 
         breadRB.isKinematic = false;
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         if(!breads.Contains(bread))
         {
             breads.Add(bread);
