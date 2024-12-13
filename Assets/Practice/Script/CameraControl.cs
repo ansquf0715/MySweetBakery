@@ -5,6 +5,7 @@ using UnityEngine;
 public class CameraControl : MonoBehaviour
 {
     public Transform player;
+    Vector3 PlayerfollowOffset = new Vector3(7.5f, 7f, 0);
     Vector3 followOffset = new Vector3(10, 7.5f, 0);
     public float smoothSpeed = 0.125f;
 
@@ -30,7 +31,7 @@ public class CameraControl : MonoBehaviour
 
     void FollowPlayer()
     {
-        Vector3 desiredPosition = player.position + followOffset;
+        Vector3 desiredPosition = player.position + PlayerfollowOffset;
         Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
         transform.position = smoothedPosition;
         transform.LookAt(player);
@@ -38,8 +39,6 @@ public class CameraControl : MonoBehaviour
 
     public void handleQuestAvailable(Vector3 pos)
     {
-        Debug.Log("isfocusing" + isFocusingOnQuest);
-        Debug.Log("이건 왜 호출이 안돼?");
         questPos = pos;
         isFocusingOnQuest = true;
     }

@@ -245,7 +245,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 3
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 79bd219617f03104ba84ef131db5eb4a, type: 2}
   m_sharedMaterial: {fileID: -5097046333353354066, guid: 79bd219617f03104ba84ef131db5eb4a, type: 2}
@@ -451,6 +451,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   breads: []
   requestBreadCount: 0
+  canvas: {fileID: 0}
+  orderObj: {fileID: 0}
+  orderSprite: {fileID: 0}
+  orderCount: {fileID: 0}
 --- !u!195 &5831250471343902366
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1379,7 +1383,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d0e306dc7c8603d4199e01fcfbfe2cb4, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

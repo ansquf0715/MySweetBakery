@@ -54,6 +54,7 @@ public class Quest1 : MonoBehaviour
         {
             if(quest.requiredMoney <= moneyManager.getMoney())
             {
+                Debug.Log("?");
                 ChangeObjects();
             }
         }

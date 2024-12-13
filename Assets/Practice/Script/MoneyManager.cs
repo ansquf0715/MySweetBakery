@@ -34,11 +34,7 @@ public class MoneyManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if(money >= 10 && !makeEventToQuest)
-        //{
-        //    EventManager.QuestMoneyIsReady();
-        //    makeEventToQuest = false;
-        //}
+
     }
 
     private void OnTriggerEnter(Collider other)
@@ -69,8 +65,9 @@ public class MoneyManager : MonoBehaviour
                 {
                     GameObject cash = cashPair.Key;
                     cashes.RemoveAt(i); 
-                    Destroy(cash); 
+                    Destroy(cash);
 
+                    money++;
                     UpdateMoneyUI();
                     break; 
                 }
@@ -89,7 +86,7 @@ public class MoneyManager : MonoBehaviour
     {
         int newMoney = count * billForBread;
         StartCoroutine(delaySpawnCash(newMoney));
-        money += newMoney;
+        //money += newMoney;
     }
 
     IEnumerator delaySpawnCash(int newMoney)

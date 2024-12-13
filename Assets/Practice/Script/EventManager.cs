@@ -18,7 +18,6 @@ public class EventManager : MonoBehaviour
 
     public static event Action OnFirstQuestIsReady; //첫번째 quest를 생성할 준비가 됨
 
-    public static event Action<Vector3> OnQuestIsAvailable; //Quest가 생성되면 카메라에게 전달하는 이벤트
 
     public static void SetPlayerNearOven(bool isNear)
     {
@@ -60,8 +59,4 @@ public class EventManager : MonoBehaviour
         OnFirstQuestIsReady?.Invoke();
     }
 
-    public static void QuestIsAvailable(Vector3 pos)
-    {
-        OnQuestIsAvailable?.Invoke(pos);
-    }
 }

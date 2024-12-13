@@ -44,14 +44,19 @@ public class GetBreadState : ICustomerState
     int requestBreadCount;
     Transform assignedBreadPos;
 
+    Sprite breadSprite;
+
     public GetBreadState(Customer customer)
     {
         this.customer = customer;
         this.agent = customer.agent;
         this.manager = customer.manager;
+
+        breadSprite = Resources.Load<Sprite>("Croissant");
     }
     public void Enter() 
     {
+
         decideRequestBread();
         MoveToBreadStand();
     }
@@ -60,6 +65,8 @@ public class GetBreadState : ICustomerState
     }
     public void Exit() 
     {
+        //customer.gameObject.SetActive(false);
+        customer.orderCount.gameObject.SetActive(false);
         manager.LeavingBreadPos(customer);
     }
 
@@ -121,7 +128,16 @@ public class GetBreadState : ICustomerState
         }
         customer.transform.rotation = targetRot;
 
+        SetUI();
         RequestBreadCount();
+    }
+
+    void SetUI()
+    {
+        customer.canvas.gameObject.SetActive(true);
+        //customer.orderSprite = breadSprite;
+        customer.orderObj.sprite = breadSprite;
+        customer.orderCount.text = requestBreadCount.ToString();
     }
 
     void receiveBreads(Customer customer, List<GameObject> receivedBreads)
@@ -182,17 +198,23 @@ public class CheckOutState : ICustomerState
 
     public bool checkOutEnded;
 
+    Sprite counterSprite;
+
     public CheckOutState(Customer customer)
     {
         this.customer = customer;
         this.agent = customer.agent;
         this.manager = customer.manager;
+
+        counterSprite = Resources.Load<Sprite>("Pay");
     }
 
     public void Enter() 
     {
         checkOutEnded = false;
         agent.isStopped = false;
+        Debug.Log("CheckoutPos");
+        SetUI();
         MoveToCounter();
     }
     public void Execute() 
@@ -205,6 +227,18 @@ public class CheckOutState : ICustomerState
     public void Exit() 
     {
 
+    }
+
+    void SetUI()
+    {
+        customer.orderObj.sprite = counterSprite;
+
+        Vector3 currentPos = customer.orderObj.rectTransform.localPosition;
+        customer.orderObj.rectTransform.localPosition = new Vector3(
+            currentPos.x - 0.2f, currentPos.y, currentPos.z);
+
+        customer.orderObj.rectTransform.localScale = new Vector3(
+            1.4f, 1.4f, 1.4f);
     }
 
     void MoveToCounter()
@@ -220,7 +254,13 @@ public class CheckOutState : ICustomerState
         && !agent.pathPending);
 
         agent.isStopped = true;
+        disableUI();
         customer.StartCoroutine(RotateToTarget());
+    }
+
+    void disableUI()
+    {
+        customer.canvas.gameObject.SetActive(false);
     }
 
     IEnumerator RotateToTarget()
@@ -296,6 +336,7 @@ public class LeaveStoreState : ICustomerState
 
     public void Enter() 
     {
+        //setUI();
         manager.customerEndedCheckout(customer);
 
         Debug.Log("Leave Store STate");
@@ -305,10 +346,16 @@ public class LeaveStoreState : ICustomerState
         Vector3 leavePos = new Vector3(-14f, 0.5f, 4f);
         agent.SetDestination(leavePos);
     }
+
     public void Execute() { }
     public void Exit() 
     {
     }
+
+    //void setUI()
+    //{
+    //    customer.canvas.gameObject.SetActive(false);
+    //}
 
     IEnumerator WaitForArrive()
     {

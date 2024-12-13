@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using TMPro;
+using System.Diagnostics.Contracts;
+using UnityEngine.UI;
 
 //public enum CustomerState
 //{
-//    CheckOut,
 //    LeaveStore,
 //    RequestSeat,
 //};
@@ -32,7 +34,13 @@ public class Customer : MonoBehaviour
     public int requestBreadCount = 0;
 
     GameObject bag;
-    
+
+    Camera cam;
+    public Canvas canvas;
+    public Image orderObj;
+    public TMP_Text orderCount;
+
+    Sprite seatSprite;
 
     // Start is called before the first frame update
     void Start()
@@ -52,6 +60,18 @@ public class Customer : MonoBehaviour
         ChangeState(idleState);
 
         bag = null;
+
+        //seatSprite = Resources.Load<Sprite>("TableChair");
+
+        cam = Camera.main;
+        canvas = GetComponentInChildren<Canvas>();
+
+        orderObj = canvas.transform.Find("OrderObj").GetComponent<Image>();  
+        orderObj.sprite = seatSprite;
+
+        orderCount = canvas.transform.Find("OrderCount").gameObject.GetComponent<TMP_Text>();
+
+        canvas.gameObject.SetActive(false);
     }
 
     // Update is called once per frame
@@ -63,6 +83,15 @@ public class Customer : MonoBehaviour
             //stateChanged = false;
         }
         UpdateAnimation();
+
+        if(canvas.gameObject.activeSelf)
+        {
+            canvas.transform.LookAt(
+                canvas.transform.position + cam.transform.rotation * Vector3.forward,
+                cam.transform.rotation * Vector3.up);
+
+            canvas.transform.Rotate(0, 180f, 0);
+        }
     }
 
     public void ChangeState(ICustomerState newState)
