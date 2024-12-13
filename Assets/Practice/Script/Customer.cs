@@ -29,8 +29,10 @@ public class Customer : MonoBehaviour
 
     int currentBreadCount = 0;
     public List<GameObject> breads = new List<GameObject>();
+    public int requestBreadCount = 0;
 
     GameObject bag;
+    
 
     // Start is called before the first frame update
     void Start()

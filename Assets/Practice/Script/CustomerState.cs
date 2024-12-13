@@ -66,6 +66,7 @@ public class GetBreadState : ICustomerState
     {
         requestBreadCount = Random.Range(1, 4);
         Debug.Log("»§ °¹¼ö" + requestBreadCount);
+        customer.requestBreadCount = requestBreadCount;
     }
 
     public void MoveToBreadStand()
@@ -287,6 +288,8 @@ public class LeaveStoreState : ICustomerState
     public void Enter() 
     {
         Debug.Log("Leave Store STate");
+        EventManager.CustomerPay(customer, customer.requestBreadCount);
+
         //manager.dequeueCounterCustomer(customer);
         manager.customerArrivedAtCounter(customer);
 

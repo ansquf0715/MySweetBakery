@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class EventManager : MonoBehaviour
 {
-    public static event Action OnRequestBake; //빵 구우라는 이벤트
-    public static event Action<GameObject> OnBreadBaked; //빵이 구워졌을 때 들어오는 이벤트
-
     public static event Action<bool> OnPlayerNearOven; //player가 oven 근처라는 이벤트
     public static event Action OnPlayerBreadRequest; //player가 빵을 달라고 요청하는 이벤트
     public static event Action<GameObject> OnPlayerReceiveBreads; //player가 빵을 받는 이벤트
@@ -21,16 +18,7 @@ public class EventManager : MonoBehaviour
 
     public static event Action<Customer> OnCustomerAtCounter; // customerManager가 들어온 customer가 있다고 전달
     //public static event Action<GameObject> OnBagReady; //계산이 완료된 빵
-
-    public static void RequestBread()
-    {
-        OnRequestBake?.Invoke();
-    }
-
-    public static void BreadBaked(GameObject bread)
-    {
-        OnBreadBaked?.Invoke(bread);
-    }
+    public static event Action<Customer, int> OnCustomerPay; //고객이 돈을 지불했다는 이벤트
 
     public static void SetPlayerNearOven(bool isNear)
     {
@@ -60,6 +48,11 @@ public class EventManager : MonoBehaviour
     public static void CustomerAtCounter(Customer customer)
     {
         OnCustomerAtCounter?.Invoke(customer);
+    }
+
+    public static void CustomerPay(Customer customer, int amount)
+    {
+        OnCustomerPay?.Invoke(customer, amount);
     }
 
     //public static void BagReady(GameObject bag)
