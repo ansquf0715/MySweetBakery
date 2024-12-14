@@ -1007,7 +1007,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cashPrefab: {fileID: 2757610613500168527, guid: 24320ebc2e811c941812b50d0860607b, type: 3}
-  money: 50
+  money: 60
   moneySpawnPos: {fileID: 2089157098}
   moneyText: {fileID: 1941581542}
 --- !u!114 &460092078

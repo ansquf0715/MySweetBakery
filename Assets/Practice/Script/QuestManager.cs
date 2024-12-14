@@ -88,6 +88,9 @@ public class QuestManager : MonoBehaviour
                     if(quest.questID == 2)
                     {
                         QuestObj.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+                        Quest2 script = QuestObj.GetComponent<Quest2>();
+                        script.SetQuest(quest);
+
                     }
                 }
                 else

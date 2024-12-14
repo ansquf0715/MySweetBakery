@@ -268,7 +268,7 @@ GameObject:
   - component: {fileID: 8689961416092486221}
   - component: {fileID: 6022740163925776136}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: moneyText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -401,6 +401,7 @@ GameObject:
   m_Component:
   - component: {fileID: 562355565864463895}
   - component: {fileID: 7876098730698311777}
+  - component: {fileID: -8112772647892637636}
   m_Layer: 0
   m_Name: Quest2
   m_TagString: Untagged
@@ -437,6 +438,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 2.3491695, y: 0.5013302, z: 2.5123863}
   m_Center: {x: 0.039046306, y: -0.24933492, z: -0.1194188}
+--- !u!114 &-8112772647892637636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7876098730698311838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9bb61b32444b04469a2b965bdc67756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8887612829669047619
 GameObject:
   m_ObjectHideFlags: 0
