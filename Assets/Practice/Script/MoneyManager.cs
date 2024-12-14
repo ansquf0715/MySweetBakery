@@ -56,6 +56,17 @@ public class MoneyManager : MonoBehaviour
         }
     }
 
+    public bool PayMoney(int amount =1)
+    {
+        if(money >= amount)
+        {
+            money -= amount;
+            UpdateMoneyUI();
+            return true;
+        }
+        return false;
+    }
+
     IEnumerator RemoveCash()
     {
         while(playerIsGettingCash)

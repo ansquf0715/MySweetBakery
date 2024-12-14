@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using TMPro;
 
 public class Quest1 : MonoBehaviour
 {
@@ -29,6 +30,10 @@ public class Quest1 : MonoBehaviour
 
     Vector3 deskPosition;
 
+    TextMeshProUGUI moneyText;
+
+    bool isPaying = false;
+
     private void OnEnable()
     {
         EventManager.OnSeatDirty += HandleSeatDirty;
@@ -52,6 +57,9 @@ public class Quest1 : MonoBehaviour
             currentWalls.Add(transform.Find("Wall" + (i + 1)).gameObject);
         }
         currentFloor = transform.Find("Quest1Floor").gameObject;
+
+        moneyText = transform.Find("Quest1Floor/Canvas/moneyUI").GetComponent<TextMeshProUGUI>();
+        moneyText.text = 30.ToString();
     }
 
     // Update is called once per frame
@@ -65,25 +73,36 @@ public class Quest1 : MonoBehaviour
         quest = q;
     }
 
+    //private void OnTriggerEnter(Collider other)
+    //{
+    //    if(!enabled) return;
+
+    //    if(other.gameObject.CompareTag("Player"))
+    //    {
+    //        EventManager.ArrowAction(5);
+    //        if (!alreadyCreated)
+    //        {
+    //            Debug.Log("quest.RequiredMoney" + quest.requiredMoney);
+    //            Debug.Log("money manager" + moneyManager.getMoney());
+    //            if (quest.requiredMoney <= moneyManager.getMoney())
+    //            {
+    //                //Debug.Log("?");
+    //                ChangeObjects();
+    //                alreadyCreated = true;
+    //            }
+    //        }
+    //    }
+    //}
+
     private void OnTriggerEnter(Collider other)
     {
-        if(!enabled) return;
+        if (!enabled) return;
 
         if(other.gameObject.CompareTag("Player"))
         {
             EventManager.ArrowAction(5);
-            Debug.Log("람ㄴㅇ;ㅏ럼니ㅏㅇㄹ;");
-            if (!alreadyCreated)
-            {
-                Debug.Log("quest.RequiredMoney" + quest.requiredMoney);
-                Debug.Log("money manager" + moneyManager.getMoney());
-                if (quest.requiredMoney <= moneyManager.getMoney())
-                {
-                    //Debug.Log("?");
-                    ChangeObjects();
-                    alreadyCreated = true;
-                }
-            }
+            isPaying = true;
+            StartCoroutine(PayForQuest());
         }
     }
 
@@ -91,6 +110,11 @@ public class Quest1 : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Player"))
         {
+            if(isPaying)
+            {
+                StartCoroutine(PayForQuest());
+            }
+
             if(!isCleaning && haveDirtyTable && seat.isDirty)
             {
                 isCleaning = true;
@@ -98,6 +122,42 @@ public class Quest1 : MonoBehaviour
                 StartCoroutine(CleanSeat());
             }
         }
+    }
+
+    IEnumerator PayForQuest()
+    {
+        isPaying = true; // 지불 시작 표시
+        while (quest.requiredMoney > 0 && !alreadyCreated)
+        {
+            if (moneyManager.getMoney() > 0)
+            {
+                bool paymentSuccess = moneyManager.PayMoney(1); // MoneyManager에서 1씩 돈 지불하고 결과를 받아옴
+                if (paymentSuccess)
+                {
+                    quest.requiredMoney -= 1; // 성공적으로 지불했다면 필요 금액 감소
+                    yield return new WaitForSeconds(0.5f); // 0.2초 대기
+                }
+                else
+                {
+                    Debug.Log("Insufficient funds to continue the quest.");
+                    isPaying = false;
+                    break; // 돈이 부족하면 반복 중지
+                }
+            }
+            else
+            {
+                isPaying = false;
+                Debug.Log("No money left to pay for the quest.");
+                break; // 돈이 0이면 반복 중지
+            }
+        }
+
+        if (quest.requiredMoney <= 0)
+        {
+            alreadyCreated = true;
+            ChangeObjects(); // 돈을 다 지불했다면 객체 변경
+        }
+        isPaying = false; // 지불 종료
     }
 
     void HandleSeatDirty(Seat seat)

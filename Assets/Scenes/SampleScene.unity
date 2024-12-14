@@ -3865,6 +3865,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 705914664644893337, guid: 65ead8698acc224438b039ecbfa4d2c5, type: 3}
+      propertyPath: m_Name
+      value: moneyUI
+      objectReference: {fileID: 0}
     - target: {fileID: 705914665474049219, guid: 65ead8698acc224438b039ecbfa4d2c5, type: 3}
       propertyPath: m_IsActive
       value: 1
