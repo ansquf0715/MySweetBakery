@@ -32,6 +32,7 @@ public class IdleState : ICustomerState
     {
         yield return new WaitForSeconds(1f);
         customer.ChangeState(customer.getBreadState);
+        //customer.ChangeState(customer.requestSeatState);
     }
 }
 
@@ -73,7 +74,7 @@ public class GetBreadState : ICustomerState
     void decideRequestBread()
     {
         requestBreadCount = Random.Range(1, 4);
-        Debug.Log("»§ °¹¼ö" + requestBreadCount);
+        //Debug.Log("»§ °¹¼ö" + requestBreadCount);
         customer.requestBreadCount = requestBreadCount;
     }
 
@@ -185,7 +186,13 @@ public class GetBreadState : ICustomerState
         }
 
         customer.SetBreads(receivedBreads);
-        customer.ChangeState(customer.checkOutState);
+
+        //Debug.Log("customer request seat" + customer.willRequestSeat);
+        //customer.ChangeState(customer.checkOutState);
+        if (customer.willRequestSeat)
+            customer.ChangeState(customer.requestSeatState);
+        else
+            customer.ChangeState(customer.checkOutState);
     }
 
 }
@@ -226,7 +233,7 @@ public class CheckOutState : ICustomerState
     }
     public void Exit() 
     {
-
+        EventManager.CustomerPay(customer, customer.requestBreadCount);
     }
 
     void SetUI()
@@ -339,12 +346,17 @@ public class LeaveStoreState : ICustomerState
         //setUI();
         manager.customerEndedCheckout(customer);
 
-        Debug.Log("Leave Store STate");
-        EventManager.CustomerPay(customer, customer.requestBreadCount);
 
         agent.isStopped = false;
-        Vector3 leavePos = new Vector3(-14f, 0.5f, 4f);
+        //Vector3 leavePos = new Vector3(-14f, 0.5f, 4f);
+        Vector3 leavePos = new Vector3(-12f, 0.5f, 3.4f);
         agent.SetDestination(leavePos);
+
+        //NavMeshHit hit;
+        //if (NavMesh.SamplePosition(leavePos, out hit, 1.0f, NavMesh.AllAreas))
+        //    agent.SetDestination(hit.position);
+        //else
+        //    Debug.Log("¸ñÀûÁö°¡ Æ÷ÇÔ x");
     }
 
     public void Execute() { }
@@ -368,9 +380,203 @@ public class LeaveStoreState : ICustomerState
 
 public class RequestSeatState : ICustomerState
 {
-    public void Enter() { }
-    public void Execute() { }
-    public void Exit() { }
+    Customer customer;
+    NavMeshAgent agent;
+    CustomerManager manager;
+
+    Sprite seatSprite;
+    bool isCheckingSeat = false;
+
+    GameObject trashPrefab;
+    GameObject trash;
+
+    ParticleSystem smile;
+
+    public RequestSeatState(Customer customer)
+    {
+        this.customer = customer;
+        this.agent = customer.agent;
+        this.manager = customer.manager;
+
+        seatSprite = Resources.Load<Sprite>("TableChair");
+        trashPrefab = Resources.Load<GameObject>("Trash");
+        smile = Resources.Load<ParticleSystem>("VFX_EmojiSmile");
+    }
+
+    public void Enter() 
+    {
+        SetUI();
+        agent.isStopped = false;
+        checkForSeat();
+    }
+    public void Execute() 
+    {
+
+    }
+    public void Exit() 
+    {
+    }
+
+    void SetUI()
+    {
+        customer.orderObj.sprite = seatSprite;
+
+        Vector3 currentPos = customer.orderObj.rectTransform.localPosition;
+        customer.orderObj.rectTransform.localPosition = new Vector3(
+            currentPos.x - 0.2f, currentPos.y, currentPos.z);
+
+        customer.orderObj.rectTransform.localScale = new Vector3(
+            1.4f, 1.4f, 1.4f);
+    }
+
+    void checkForSeat()
+    {
+        (Vector3 pos, bool check) = manager.assignCustomerSeatPos(customer);
+
+        if(check)
+        {
+            Vector3 newPos = pos;
+            newPos.x += 0.5f;
+            agent.SetDestination(newPos);
+            isCheckingSeat = false;
+
+            customer.canvas.gameObject.SetActive(false);
+
+            customer.StartCoroutine(WaitForArriveSeat());
+        }
+        else
+        {
+            if(!isCheckingSeat)
+            {
+                agent.SetDestination(pos);
+                isCheckingSeat = true;
+                customer.StartCoroutine(waitAndRetry());
+            }
+        }
+    }
+
+    IEnumerator waitAndRetry()
+    {
+        while(isCheckingSeat)
+        {
+            yield return new WaitForSeconds(1f);
+            
+            checkForSeat();
+        }
+    }
+
+    public void moveToFirstPos(Vector3 targetPos)
+    {
+        Debug.Log("really move pos");
+        agent.SetDestination(targetPos);
+        isCheckingSeat = true;
+
+        customer.StartCoroutine(WaitForArriveSeat());
+    }
+
+    public void moveToWaitingPos(Vector3 target)
+    {
+        agent.SetDestination(target);
+    }
+
+
+    IEnumerator WaitForArriveSeat()
+    {
+        yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
+        && !agent.pathPending);
+
+        agent.isStopped = true;
+        agent.updatePosition = false;
+        manager.NotifySeatAvailable();
+        Vector3 newPos = customer.transform.position;
+        //newPos.y += 0.5f;
+        newPos.y = 1f;
+        customer.transform.position = newPos;
+        customer.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+        customer.SetSitting(true);
+
+        yield return customer.StartCoroutine(placeBreadAtTable());
+    }
+
+    IEnumerator placeBreadAtTable()
+    {
+        Vector3 startPos = new Vector3(-5.4f, 1.5f, 7.7f);
+        float yOffset = 0.3f;
+
+        for(int i=customer.breads.Count-1; i>=0; i--)
+        {
+            GameObject bread = customer.breads[i];
+
+            Vector3 targetPos = startPos;
+            targetPos.y += yOffset * (customer.breads.Count - 1 - i);
+
+            yield return customer.StartCoroutine(MoveBread(bread, targetPos));
+            //yield return new WaitForSeconds(0.5f);
+        }
+
+        customer.StartCoroutine(readyToLeave());
+    }
+
+    IEnumerator MoveBread(GameObject bread, Vector3 targetPos)
+    {
+        float duration = 0.2f;
+        Vector3 startPos = bread.transform.position;
+        float elapsed = 0f;
+
+        while(elapsed < duration)
+        {
+            bread.transform.position = Vector3.Lerp(startPos,
+                targetPos, (elapsed/duration));
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        bread.transform.position = targetPos;
+    }
+
+    IEnumerator readyToLeave()
+    {
+        yield return new WaitForSeconds(3f);
+
+        Vector3 newPos = customer.transform.position;
+
+        newPos.x += 0.5f;
+        newPos.y = 0.5f;
+        newPos.z -= 1f;
+        customer.transform.position = newPos;
+
+        agent.updatePosition = true;
+        customer.SetSitting(false);
+
+        Vector3 particlePos = customer.transform.position;
+        particlePos.y = particlePos.y + 2f;
+        ParticleSystem particle = GameObject.Instantiate(smile,
+            particlePos, Quaternion.identity);
+        particle.Play();
+
+        GameObject.Destroy(particle.gameObject, 1f);
+
+        makeDirty();
+
+        manager.LeaveSeat(customer, trash);
+        customer.ChangeState(customer.leaveStoreState);
+    }
+
+    void makeDirty()
+    {
+        for(int i=0; i<customer.breads.Count; i++)
+        {
+            customer.destroyBreads();
+        }
+        GameObject chair = customer.manager.GetChair(customer);
+        Vector3 currentRot = chair.transform.rotation.eulerAngles;
+        currentRot.y = (currentRot.y) + 45 % 360f;
+        chair.transform.rotation = Quaternion.Euler(currentRot);
+
+        Vector3 trashPos = new Vector3(-5.55f, 1.5f, 7.7f);
+        trash = GameObject.Instantiate(trashPrefab,
+            trashPos, Quaternion.identity);
+    }
+    
 }
 
 

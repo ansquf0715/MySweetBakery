@@ -37,38 +37,19 @@ public class Counter : MonoBehaviour
 
         if(playerIsCashing && cashingCustomer != null && !alreadyCashedCustomer)
         {
-            checkingOut();
-            alreadyCashedCustomer=true;
+            if(cashingCustomer.currentState is CheckOutState)
+            {
+                checkingOut();
+                alreadyCashedCustomer = true;
+            }
         }
     }
-
-    //void addCustomer(Customer customer)
-    //{
-    //    waitingCustomers.Enqueue(customer);
-    //}
-
-    //void handleCustomerArrival(Customer customer)
-    //{
-    //    //cashingCustomer = customer;
-    //    if (playerIsCashing && cashingCustomer != null)
-    //    {
-    //        Debug.Log("handle Customer Arriver at counter");
-    //        checkingOut();
-    //    }
-    //}
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
             playerIsCashing = true;
-            //Debug.Log("player is cashing" +  playerIsCashing);
-            //if (waitingCustomers.Count > 0)
-            //{
-            //    playerIsCashing = true;
-            //}
-            //else
-            //    playerIsCashing = false;
         }
         else if(other.gameObject.CompareTag("Customer"))
         {
@@ -99,14 +80,6 @@ public class Counter : MonoBehaviour
 
         StartCoroutine(MoveBreadsToBag(breads));
     }
-
-    //IEnumerator WaitToProcessNextCustomer()
-    //{
-    //    yield return new WaitForSeconds(2f);
-
-    //    if (waitingCustomers.Count > 0)
-    //        playerIsCashing = true;
-    //}
 
     IEnumerator MoveBreadsToBag(List<GameObject> breads)
     {
@@ -150,16 +123,8 @@ public class Counter : MonoBehaviour
 
         Animator bagAnim = bag.GetComponent<Animator>();
         bagAnim.SetBool("isOpen", false);
-        //StartCoroutine(GiveCustomerBag(customer));
 
-        //EventManager.BagReady(bag);
-        //customer.GetBag(bag);
         cashingCustomer.GetBag(bag);
-
-        //cashingCustomer.SetCustomerCheckOutEnd();
-        //bag = null;
-        //cashingCustomer = null;
-        //alreadyCashedCustomer = false;
 
         StartCoroutine(delayCheckingOut());
     }

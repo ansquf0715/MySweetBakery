@@ -75,7 +75,7 @@ public class MoneyManager : MonoBehaviour
 
             if (cashes.Count == 0)
             {
-                Debug.Log("더 이상 삭제할 cash가 없습니다.");
+                //Debug.Log("더 이상 삭제할 cash가 없습니다.");
                 break;
             }
             yield return new WaitForSeconds(0.1f);

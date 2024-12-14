@@ -119,10 +119,7 @@ public class Oven : MonoBehaviour
 
             EventManager.DeliverBreadToPlayer(bread);
         }
-        else
-        {
-            Debug.Log("No breads available");
-        }
+
     }
 
 }

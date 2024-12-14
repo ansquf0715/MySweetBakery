@@ -18,6 +18,10 @@ public class EventManager : MonoBehaviour
 
     public static event Action OnFirstQuestIsReady; //첫번째 quest를 생성할 준비가 됨
 
+    public static event Action<GameObject> OnNewSeatAvailable; //seat이 생성됐을 때
+
+    public static event Action<Seat> OnSeatDirty; //seat가 더럽다는 이벤트
+    public static event Action<Seat> OnSeatCleaned; //seat가 청소됐다는 이벤트
 
     public static void SetPlayerNearOven(bool isNear)
     {
@@ -59,4 +63,18 @@ public class EventManager : MonoBehaviour
         OnFirstQuestIsReady?.Invoke();
     }
 
+    public static void NewSeatAvailable(GameObject chair)
+    {
+        OnNewSeatAvailable?.Invoke(chair);
+    }
+
+    public static void SeatDirty(Seat seat)
+    {
+        OnSeatDirty?.Invoke(seat);
+    }
+
+    public static void SeatCleaned(Seat seat)
+    {
+        OnSeatCleaned?.Invoke(seat);
+    }
 }

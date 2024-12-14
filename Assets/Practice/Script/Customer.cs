@@ -21,6 +21,10 @@ public class Customer : MonoBehaviour
     public CustomerManager manager { get; private set; }
     //public EventManager eventManager { get; private set; }
 
+    //public bool sitting { get; private set; }
+    bool sitting = false;
+    public bool willRequestSeat = false;
+
     public IdleState idleState;
     public GetBreadState getBreadState;
     public CheckOutState checkOutState;
@@ -28,6 +32,7 @@ public class Customer : MonoBehaviour
     public RequestSeatState requestSeatState;
 
     bool stateChanged = false;
+    //public bool isSeat = false;
 
     int currentBreadCount = 0;
     public List<GameObject> breads = new List<GameObject>();
@@ -50,12 +55,13 @@ public class Customer : MonoBehaviour
 
         manager = FindObjectOfType<CustomerManager>();
         //eventManager = FindObjectOfType<EventManager>();
+        //sitting = false;
 
         idleState = new IdleState(this);
         getBreadState = new GetBreadState(this);
         checkOutState = new CheckOutState(this);
         leaveStoreState = new LeaveStoreState(this);
-        requestSeatState = new RequestSeatState();
+        requestSeatState = new RequestSeatState(this);
 
         ChangeState(idleState);
 
@@ -104,20 +110,27 @@ public class Customer : MonoBehaviour
 
     void UpdateAnimation()
     {
-        bool isMoving = agent.velocity.magnitude > 0.1f;
-        if(breads.Count > 0 || bag != null)
+        if (sitting)
         {
-            if (isMoving)
-                animator.SetInteger("State", 3);
-            else
-                animator.SetInteger("State", 2);
+            animator.SetInteger("State", 4);
         }
         else
         {
-            if (isMoving)
-                animator.SetInteger("State", 1);
+            bool isMoving = agent.velocity.magnitude > 0.1f;
+            if (breads.Count > 0 || bag != null)
+            {
+                if (isMoving)
+                    animator.SetInteger("State", 3);
+                else
+                    animator.SetInteger("State", 2);
+            }
             else
-                animator.SetInteger("State", 0);
+            {
+                if (isMoving)
+                    animator.SetInteger("State", 1);
+                else
+                    animator.SetInteger("State", 0);
+            }
         }
     }
 
@@ -159,5 +172,32 @@ public class Customer : MonoBehaviour
     {
         checkOutState.checkOutEnded = true;
         //Debug.Log("CheckOutState. checkoutended" +  checkOutState.checkOutEnded);
+    }
+
+    public void moveToFirstWaitingSeatPos(Vector3 targetPos)
+    {
+        Debug.Log("Customer Move to target pos");
+        requestSeatState.moveToFirstPos(targetPos);
+    }
+
+    public void moveToWaitingPos(Vector3 targetPos)
+    {
+        requestSeatState.moveToWaitingPos(targetPos);
+    }
+
+    public void SetSitting(bool isSitting)
+    {
+        sitting = isSitting;
+    }
+
+    public void destroyBreads()
+    {
+        for(int i=breads.Count-1; i>=0; i--)
+        {
+            GameObject bread = breads[i];
+            breads.RemoveAt(i);
+            Destroy(bread);
+        }
+        breads.Clear();
     }
 }

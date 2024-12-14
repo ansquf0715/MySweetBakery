@@ -13,12 +13,31 @@ public class Quest1 : MonoBehaviour
     public GameObject plantPrefab;
     public GameObject chairPrefab;
     public GameObject deskPrefab;
-    public ParticleSystem particle;
+    public ParticleSystem openParticle;
+    public ParticleSystem cleaningParticle;
 
     public List<GameObject> currentWalls = new List<GameObject>();
     public GameObject currentFloor;
     List<GameObject> plants = new List<GameObject>();
     Transform wallSpawnPos;
+
+    Seat seat;
+
+    bool alreadyCreated = false;
+    bool haveDirtyTable = false;
+    bool isCleaning = false;
+
+    Vector3 deskPosition;
+
+    private void OnEnable()
+    {
+        EventManager.OnSeatDirty += HandleSeatDirty;
+    }
+
+    private void OnDisable()
+    {
+        EventManager.OnSeatDirty -= HandleSeatDirty;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -26,15 +45,13 @@ public class Quest1 : MonoBehaviour
         moneyManager = FindObjectOfType<MoneyManager>();
 
         wallSpawnPos = transform.Find("newWallSpawnPos");
-        Debug.Log("wall spawn pos" + wallSpawnPos.position);
+        //Debug.Log("wall spawn pos" + wallSpawnPos.position);
 
         for(int i=0; i<4; i++)
         {
             currentWalls.Add(transform.Find("Wall" + (i + 1)).gameObject);
         }
         currentFloor = transform.Find("Quest1Floor").gameObject;
-
-        //particle.Play();
     }
 
     // Update is called once per frame
@@ -52,17 +69,40 @@ public class Quest1 : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Player"))
         {
-            if(quest.requiredMoney <= moneyManager.getMoney())
+            if(!alreadyCreated)
             {
-                Debug.Log("?");
-                ChangeObjects();
+                if (quest.requiredMoney <= moneyManager.getMoney())
+                {
+                    //Debug.Log("?");
+                    ChangeObjects();
+                    alreadyCreated = true;
+                }
             }
         }
     }
 
+    private void OnTriggerStay(Collider other)
+    {
+        if(other.gameObject.CompareTag("Player"))
+        {
+            if(!isCleaning && haveDirtyTable && seat.isDirty)
+            {
+                isCleaning = true;
+                EventManager.SeatCleaned(seat);
+                StartCoroutine(CleanSeat());
+            }
+        }
+    }
+
+    void HandleSeatDirty(Seat seat)
+    {
+        haveDirtyTable = true;
+        this.seat = seat;
+    }
+
     void ChangeObjects()
     {
-        GameObject p = Instantiate(particle.gameObject, new Vector3(-6.62f, 0.83f, 7.69f), Quaternion.identity);
+        GameObject p = Instantiate(openParticle.gameObject, new Vector3(-6.62f, 0.83f, 7.69f), Quaternion.identity);
         ParticleSystem particleSystem = p.GetComponent<ParticleSystem>();
         particleSystem.Play();
 
@@ -105,6 +145,9 @@ public class Quest1 : MonoBehaviour
         Vector3 deskPos = new Vector3(-5.7f, 0.5f, 7.7f);
         GameObject desk = Instantiate(deskPrefab,
             deskPos, Quaternion.identity);
+        deskPosition = deskPos;
+
+        EventManager.NewSeatAvailable(chair);
 
         StartCoroutine(delay());
     }
@@ -120,5 +163,27 @@ public class Quest1 : MonoBehaviour
         quest.isCompleted = true;
         quest.isAvailable = false;
         QuestManager.Instance.RemoveQuestFromAvailable(quest);
+    }
+
+    IEnumerator CleanSeat()
+    {
+        Vector3 pPos = deskPosition;
+        pPos.y = pPos.y + 1f;
+        ParticleSystem particle = Instantiate(cleaningParticle,
+            pPos, Quaternion.identity);
+        particle.Play();
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (seat.trash != null)
+            Destroy(seat.trash);
+
+        seat.chair.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+
+        seat.isDirty = false;
+        seat.trash = null;
+        isCleaning = false;
+
+        Destroy(particle.gameObject, 1f);
     }
 }

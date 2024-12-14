@@ -6,12 +6,17 @@ public class Quest
 {
     public int questID;
     public string questName;
+
     public float requiredMoney;
     public bool isAvailable;
     public bool isCompleted;
-    public Vector3 cameraPos;
 
-    public Quest(int id, string name, float requiredMoney, Vector3 cameraPos)
+    public Vector3 cameraPos;
+    public GameObject questPrefab;
+    public Vector3 questPos;
+
+    public Quest(int id, string name, float requiredMoney, Vector3 cameraPos,
+        GameObject questPrefab = null, Vector3 questPos = default)
     {
         questID = id;
         questName = name;
@@ -19,6 +24,8 @@ public class Quest
         isAvailable = false;
         isCompleted = false;
         this.cameraPos = cameraPos;
+        this.questPrefab = questPrefab;
+        this.questPos = questPos;
     }
 }
 
@@ -31,9 +38,15 @@ public class QuestManager : MonoBehaviour
     List<Quest> availableQuests = new List<Quest>();
 
     public GameObject quest1Obj;
+    public GameObject quest2ObjPrefab;
 
     private void Awake()
     {
+        quests.Add(new Quest(1, "unlock first place", 35f,
+            new Vector3(-7f, 0.5f, 7.5f)));
+        quests.Add(new Quest(2, "unlock second place", 100f,
+            new Vector3(-0.7f, 0.5f, -9f), quest2ObjPrefab,
+            new Vector3(-0.08f, 0.6f, -8.56f)));
         EventManager.OnFirstQuestIsReady += HandleFirstQuestReady;
     }
 
@@ -43,10 +56,12 @@ public class QuestManager : MonoBehaviour
         if(Instance == null)
             Instance = this;
 
-        quests.Add(new Quest(1, "unlock first place", 35f,
-            new Vector3(-7f, 0.5f, 7.5f)));
-        quests.Add(new Quest(2, "unlock second place", 100f,
-            new Vector3(-0.7f, 0.5f, -9f)));
+        //quests.Add(new Quest(1, "unlock first place", 35f,
+        //    new Vector3(-7f, 0.5f, 7.5f)));
+        //quests.Add(new Quest(2, "unlock second place", 100f,
+        //    new Vector3(-0.7f, 0.5f, -9f)));
+
+        //EventManager.OnFirstQuestIsReady += HandleFirstQuestReady;
     }
 
     // Update is called once per frame
@@ -69,16 +84,30 @@ public class QuestManager : MonoBehaviour
             {
                 quest.isAvailable = true;
                 availableQuests.Add(quest);
-                //EventManager.QuestIsAvailable(quest.cameraPos);
+
+                if(quest.questPrefab != null)
+                {
+                    GameObject QuestObj = Instantiate(quest.questPrefab,
+                        quest.questPos, Quaternion.identity);
+
+                    if(quest.questID == 2)
+                    {
+                        QuestObj.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+                    }
+                }
+                else
+                {
+                    if(quest.questID == 1)
+                    {
+                        Quest1 script = quest1Obj.GetComponent<Quest1>();
+                        script.enabled = true;
+                        script.SetQuest(quest);
+                    }
+                }
+
                 CameraControl cam = Camera.main.GetComponent<CameraControl>();
                 cam.handleQuestAvailable(quest.cameraPos);
 
-                if (quest.questID == 1)
-                {
-                    Quest1 quest1Script = quest1Obj.GetComponent<Quest1>();
-                    quest1Script.enabled = true;
-                    quest1Script.SetQuest(quest);
-                }
                 break;
             }
         }
@@ -86,11 +115,9 @@ public class QuestManager : MonoBehaviour
 
     public void RemoveQuestFromAvailable(Quest completed)
     {
-        Debug.Log("이건 되나");
         if(availableQuests.Contains(completed))
         {
             availableQuests.Remove(completed);
-            Debug.Log("다음 거 생성해라");
             CreateQuest();
         }
     }
