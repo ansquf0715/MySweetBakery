@@ -5,6 +5,8 @@ using UnityEngine;
 public class Counter : MonoBehaviour
 {
     public GameObject bagPrefab;
+    public AudioClip cashSound;
+    AudioSource audioSource;
 
     //Queue<Customer> waitingCustomers = new Queue<Customer>();
     Customer cashingCustomer;
@@ -24,6 +26,8 @@ public class Counter : MonoBehaviour
         boxCol = GetComponent<BoxCollider>();
         circleCol = GetComponent<SphereCollider>();
 
+        audioSource = GetComponent<AudioSource>();
+
         //EventManager.OnNextCustomerArrivedAtCounterPosition += handleCustomerArrival;
     }
 
@@ -39,6 +43,7 @@ public class Counter : MonoBehaviour
         {
             if(cashingCustomer.currentState is CheckOutState)
             {
+                Debug.Log("ÀÌ°Å ¸î¹ø µÅ");
                 checkingOut();
                 alreadyCashedCustomer = true;
             }
@@ -49,6 +54,7 @@ public class Counter : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
+            EventManager.OnArrowAction(3);
             playerIsCashing = true;
         }
         else if(other.gameObject.CompareTag("Customer"))
@@ -67,7 +73,8 @@ public class Counter : MonoBehaviour
 
     void checkingOut()
     {
-        //Debug.Log("checking out");
+        Debug.Log("checking out");
+        audioSource.PlayOneShot(cashSound);
 
         alreadyCashedCustomer = true;
 
@@ -132,6 +139,7 @@ public class Counter : MonoBehaviour
     IEnumerator delayCheckingOut()
     {
         yield return new WaitForSeconds(2f);
+
 
         //Debug.Log("delay checking out");
         cashingCustomer.SetCustomerCheckOutEnd();

@@ -34,9 +34,9 @@ public class QuestManager : MonoBehaviour
     public static QuestManager Instance;
 
     List<Quest> quests = new List<Quest>();
-    //List<GameObject> questObjects = new List<GameObject>();
     List<Quest> availableQuests = new List<Quest>();
 
+    public GameObject arrowPrefab;
     public GameObject quest1Obj;
     public GameObject quest2ObjPrefab;
 
@@ -47,6 +47,7 @@ public class QuestManager : MonoBehaviour
         quests.Add(new Quest(2, "unlock second place", 100f,
             new Vector3(-0.7f, 0.5f, -9f), quest2ObjPrefab,
             new Vector3(-0.08f, 0.6f, -8.56f)));
+
         EventManager.OnFirstQuestIsReady += HandleFirstQuestReady;
     }
 
@@ -56,12 +57,6 @@ public class QuestManager : MonoBehaviour
         if(Instance == null)
             Instance = this;
 
-        //quests.Add(new Quest(1, "unlock first place", 35f,
-        //    new Vector3(-7f, 0.5f, 7.5f)));
-        //quests.Add(new Quest(2, "unlock second place", 100f,
-        //    new Vector3(-0.7f, 0.5f, -9f)));
-
-        //EventManager.OnFirstQuestIsReady += HandleFirstQuestReady;
     }
 
     // Update is called once per frame

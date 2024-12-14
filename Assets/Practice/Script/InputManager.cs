@@ -58,6 +58,7 @@ public class InputManager : MonoBehaviour
 
     public void Drag(BaseEventData baseEventData)
     {
+        playerScript.SetMoving(true);
         PointerEventData Data = baseEventData as PointerEventData;
         Vector3 pos = Data.position;
 

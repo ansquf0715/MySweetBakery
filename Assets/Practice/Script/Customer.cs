@@ -78,6 +78,8 @@ public class Customer : MonoBehaviour
         orderCount = canvas.transform.Find("OrderCount").gameObject.GetComponent<TMP_Text>();
 
         canvas.gameObject.SetActive(false);
+
+        Debug.Log("will request seat" + willRequestSeat);
     }
 
     // Update is called once per frame

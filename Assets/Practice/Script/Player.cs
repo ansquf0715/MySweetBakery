@@ -30,6 +30,9 @@ public class Player : MonoBehaviour
 
     public TextMeshProUGUI maxText;
 
+    AudioSource audioSource;
+    public AudioClip getBreadSound;
+
     enum State
     {
         Idle,
@@ -48,19 +51,18 @@ public class Player : MonoBehaviour
         anim = GetComponentInChildren<Animator>();
         breadSlot = transform.Find("BreadStackPoint");
 
-        //GameObject maxTextObject = GameObject.Find("Canvas/PlayerMax");
-        //maxText = maxTextObject.GetComponent<TextMeshPro>();
         maxText.gameObject.SetActive(false);
 
         //오븐 근처에 왔는지 전달받도록
-        //EventManager.OnPlayerNearOven += nearOvenStatus;
         EventManager.OnPlayerNearOven += UpdateTriggerStatus;
         //빵을 주는지 알도록
         EventManager.OnPlayerReceiveBreads += ReceivedBread;
-
         //sell box가 빵을 달라고 요청하는지
-        //EventManager.OnSellBoxRequestBread += ReceiveSellBoxBreadRequest;
         EventManager.OnSellBoxRequestBread += GiveBreadToSellBox;
+
+        audioSource = GetComponent<AudioSource>();
+
+        //arrowIsAvailable = FindObjectOfType<PlayerArrow>().arrowIsAvailable;
     }
 
 
@@ -69,7 +71,10 @@ public class Player : MonoBehaviour
     void Update()
     {
         UpdateAnimation();
+        //checkArrowAvailable();
     }
+
+
 
     void UpdateAnimation()
     {
@@ -128,6 +133,8 @@ public class Player : MonoBehaviour
     {
         if (bread != null && breads.Count < maxBreadCount)
         {
+            audioSource.PlayOneShot(getBreadSound);
+
             Rigidbody breadRb = bread.GetComponent<Rigidbody>();
             breadRb.isKinematic = true;
             breadRb.useGravity = false;
@@ -189,6 +196,7 @@ public class Player : MonoBehaviour
         {
             GameObject bread = breads[breads.Count-1];
             breads.RemoveAt(breads.Count - 1);
+
             EventManager.PlayerGiveBreadToSellBox(bread);
 
             if(breads.Count < maxBreadCount)

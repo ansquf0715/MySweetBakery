@@ -18,11 +18,17 @@ public class SellBox : MonoBehaviour
     bool isProcessingCustomer = false;
     Queue<Customer> enteredCustomer = new Queue<Customer>();
 
+    AudioSource audioSource;
+    public AudioClip putBreadSound;
+
     // Start is called before the first frame update
     void Start()
     {
         breadSlot = transform.Find("BreadSortSlot");
         EventManager.OnPlayerGiveBreadToSellBox += ReceiveBreadFromPlayer;
+
+        GameObject gameManager = GameObject.Find("GameManager");
+        audioSource = gameManager.GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -77,6 +83,7 @@ public class SellBox : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Player"))
         {
+            EventManager.OnArrowAction(2);
             nearPlayer = true;
         }
         if (other.gameObject.CompareTag("Customer"))
@@ -102,7 +109,11 @@ public class SellBox : MonoBehaviour
 
         currentBreadCount++;
         breads.Add(receivedBread);
-        //SortBreads();
+
+
+        audioSource.clip = putBreadSound;
+        audioSource.loop = true;
+        audioSource.Play();
 
         StartCoroutine(MoveBreadToSlot(receivedBread));
     }
@@ -127,7 +138,7 @@ public class SellBox : MonoBehaviour
         float elapsedTime = 0f;
         float moveDuration = 0.5f;
 
-        while(elapsedTime < moveDuration)
+        while (elapsedTime < moveDuration)
         {
             bread.transform.position = Vector3.Lerp(startPos, targetPos, (elapsedTime / moveDuration));
             elapsedTime += Time.deltaTime;
@@ -137,6 +148,8 @@ public class SellBox : MonoBehaviour
         bread.transform.position = targetPos;
         bread.transform.rotation = Quaternion.Euler(0, 0, 0);
         bread.transform.SetParent(breadSlot);
+
+        audioSource.Stop();
     }
 
 }

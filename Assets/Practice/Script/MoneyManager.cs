@@ -41,6 +41,8 @@ public class MoneyManager : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Player"))
         {
+            EventManager.OnArrowAction(4);
+
             playerIsGettingCash = true;
             StartCoroutine(RemoveCash());
         }

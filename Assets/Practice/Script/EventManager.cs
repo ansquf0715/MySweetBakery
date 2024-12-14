@@ -23,6 +23,8 @@ public class EventManager : MonoBehaviour
     public static event Action<Seat> OnSeatDirty; //seat가 더럽다는 이벤트
     public static event Action<Seat> OnSeatCleaned; //seat가 청소됐다는 이벤트
 
+    public static Action<int> OnArrowAction; //화살표 위치를 지정하기 위해
+
     public static void SetPlayerNearOven(bool isNear)
     {
         OnPlayerNearOven?.Invoke(isNear);
@@ -76,5 +78,11 @@ public class EventManager : MonoBehaviour
     public static void SeatCleaned(Seat seat)
     {
         OnSeatCleaned?.Invoke(seat);
+    }
+
+    public static void ArrowAction(int arrowId)
+    {
+        //Debug.Log("arrowId" + arrowId);
+        OnArrowAction?.Invoke(arrowId);
     }
 }

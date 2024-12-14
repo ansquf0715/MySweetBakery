@@ -44,6 +44,7 @@ public class Oven : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Player"))
         {
+            EventManager.OnArrowAction(1);
             EventManager.SetPlayerNearOven(true);
         }
     }

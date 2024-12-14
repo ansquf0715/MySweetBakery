@@ -94,12 +94,12 @@ public class CustomerManager : MonoBehaviour
 
             createdCustomers++;
 
-            //if(createdCustomers % 3 ==0)
-            //{
-            //    customerComp.willRequestSeat = true;
-            //}
+            if (createdCustomers % 3 == 0)
+            {
+                customerComp.willRequestSeat = true;
+            }
 
-            customerComp.willRequestSeat = true;
+            //customerComp.willRequestSeat = true;
 
             yield return new WaitForSeconds(2f);
         }

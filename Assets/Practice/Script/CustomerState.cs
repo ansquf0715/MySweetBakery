@@ -46,6 +46,7 @@ public class GetBreadState : ICustomerState
     Transform assignedBreadPos;
 
     Sprite breadSprite;
+    AudioClip getBreadClip;
 
     public GetBreadState(Customer customer)
     {
@@ -54,6 +55,7 @@ public class GetBreadState : ICustomerState
         this.manager = customer.manager;
 
         breadSprite = Resources.Load<Sprite>("Croissant");
+        //getBreadClip = Resources.Load<AudioClip>("Get_Object");
     }
     public void Enter() 
     {
@@ -141,10 +143,10 @@ public class GetBreadState : ICustomerState
         customer.orderCount.text = requestBreadCount.ToString();
     }
 
-    void receiveBreads(Customer customer, List<GameObject> receivedBreads)
-    {
-        customer.StartCoroutine(MoveBreadsToStack(receivedBreads));
-    }
+    //void receiveBreads(Customer customer, List<GameObject> receivedBreads)
+    //{
+    //    customer.StartCoroutine(MoveBreadsToStack(receivedBreads));
+    //}
 
     public int RequestBreadCount()
     {
@@ -162,6 +164,8 @@ public class GetBreadState : ICustomerState
 
         float breadHeight = 0.3f;
         //float moveDuration = 0.5f;
+        AudioSource audioSource = customer.GetComponent<AudioSource>();
+        AudioClip getObjectsClip = Resources.Load<AudioClip>("Get_Object");
 
         for (int i = 0; i < receivedBreads.Count; i++)
         {
@@ -180,6 +184,8 @@ public class GetBreadState : ICustomerState
                 yield return null;
             }
 
+            audioSource.PlayOneShot(getObjectsClip);
+
             bread.transform.parent = breadStackPoint;
             bread.transform.localPosition = new Vector3(0, breadHeight * i, 0);
             bread.transform.localRotation = Quaternion.Euler(0, 90, 0);
@@ -187,8 +193,16 @@ public class GetBreadState : ICustomerState
 
         customer.SetBreads(receivedBreads);
 
-        //Debug.Log("customer request seat" + customer.willRequestSeat);
-        //customer.ChangeState(customer.checkOutState);
+        yield return new WaitForSeconds(1f);
+        customer.ChangeState(customer.checkOutState);
+
+        //customer.StartCoroutine(delay());
+    }
+
+    IEnumerator delay()
+    {
+        yield return new WaitForSeconds(1f);
+
         if (customer.willRequestSeat)
             customer.ChangeState(customer.requestSeatState);
         else
@@ -262,6 +276,11 @@ public class CheckOutState : ICustomerState
 
         agent.isStopped = true;
         disableUI();
+
+        //여기가 문제
+        //if (customer.willRequestSeat)
+        //    customer.ChangeState(customer.requestSeatState);
+
         customer.StartCoroutine(RotateToTarget());
     }
 
@@ -343,6 +362,7 @@ public class LeaveStoreState : ICustomerState
 
     public void Enter() 
     {
+        Debug.Log("Leave Store State");
         //setUI();
         manager.customerEndedCheckout(customer);
 

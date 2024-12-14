@@ -67,10 +67,16 @@ public class Quest1 : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if(!enabled) return;
+
         if(other.gameObject.CompareTag("Player"))
         {
-            if(!alreadyCreated)
+            EventManager.ArrowAction(5);
+            Debug.Log("¶÷¤¤¤·;¤¿·³´Ï¤¿¤·¤©;");
+            if (!alreadyCreated)
             {
+                Debug.Log("quest.RequiredMoney" + quest.requiredMoney);
+                Debug.Log("money manager" + moneyManager.getMoney());
                 if (quest.requiredMoney <= moneyManager.getMoney())
                 {
                     //Debug.Log("?");
@@ -88,7 +94,7 @@ public class Quest1 : MonoBehaviour
             if(!isCleaning && haveDirtyTable && seat.isDirty)
             {
                 isCleaning = true;
-                EventManager.SeatCleaned(seat);
+                //EventManager.SeatCleaned(seat);
                 StartCoroutine(CleanSeat());
             }
         }
@@ -102,6 +108,9 @@ public class Quest1 : MonoBehaviour
 
     void ChangeObjects()
     {
+        EventManager.OnArrowAction(4);
+
+
         GameObject p = Instantiate(openParticle.gameObject, new Vector3(-6.62f, 0.83f, 7.69f), Quaternion.identity);
         ParticleSystem particleSystem = p.GetComponent<ParticleSystem>();
         particleSystem.Play();
