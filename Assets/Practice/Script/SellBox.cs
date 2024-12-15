@@ -6,6 +6,7 @@ using UnityEngine;
 public class SellBox : MonoBehaviour
 {
     public List<GameObject> breads = new List<GameObject>();
+    public List<bool> breadReady = new List<bool>();
 
     Transform breadSlot;
     Vector3 breadSpacing = new Vector3(0.5f, 0f, 0f);
@@ -16,10 +17,12 @@ public class SellBox : MonoBehaviour
 
     bool nearPlayer = false;
     bool isProcessingCustomer = false;
-    Queue<Customer> enteredCustomer = new Queue<Customer>();
+    List<Customer> enteredCustomer = new List<Customer>();
 
     AudioSource audioSource;
     public AudioClip putBreadSound;
+
+    bool customerIsRequesting = false;
 
     // Start is called before the first frame update
     void Start()
@@ -36,38 +39,78 @@ public class SellBox : MonoBehaviour
     {
         if (nearPlayer && currentBreadCount < maxBreadCount)
             StartCoroutine(RequestBreadCoroutine());
-        if (enteredCustomer.Count > 0)
-            StartCoroutine(ProcessCustomerRequest());
+        //if (enteredCustomer.Count > 0)
+        //    StartCoroutine(ProcessCustomerRequest());
+    }
+
+    //public GameObject CustomerRequestBread()
+    //{
+    //    for(int i=breads.Count-1; i>=0; i--)
+    //    {
+    //        if (breadReady[i])
+    //        {
+    //            currentBreadCount--;
+    //            GameObject bread = breads[i];
+    //            breads.RemoveAt(i);
+    //            breadReady.RemoveAt(i);
+
+    //            return bread;
+    //        }
+    //    }
+    //    return null;
+    //}
+
+    public GameObject CustomerRequestBread(Customer customer)
+    {
+        if (enteredCustomer.Contains(customer)) 
+        {
+            for (int i = breads.Count - 1; i >= 0; i--)
+            {
+                if (breadReady[i])
+                {
+                    currentBreadCount--;
+                    GameObject bread = breads[i];
+                    breads.RemoveAt(i);
+                    breadReady.RemoveAt(i);
+
+                    return bread;
+                }
+            }
+        }
+        return null; 
     }
 
 
     IEnumerator ProcessCustomerRequest()
     {
-        isProcessingCustomer = true;
 
-        Customer customer = enteredCustomer.Peek();
-        //int requestBreadCount = customer.RequestBreadCount();
-        int requestBreadCount = customer.getBreadState.RequestBreadCount();
+        yield return new WaitForSeconds(1f);
 
-        if (currentBreadCount >= requestBreadCount)
-        {
-            List<GameObject> breadsToGive = new List<GameObject>();
-            for (int i = 0; i < requestBreadCount; i++)
-            {
-                breadsToGive.Add(breads[0]);
-                breads.RemoveAt(0);
-            }
-            currentBreadCount -= requestBreadCount;
+        //isProcessingCustomer = true;
 
-            //customer.ReceiveBreads(breadsToGive);
-            customer.getBreadState.ReceiveBreads(breadsToGive);
-            enteredCustomer.Dequeue();
-        }
-        else
-        {
-            yield return new WaitForSeconds(1f);
-        }
-        isProcessingCustomer = false;
+        //Customer customer = enteredCustomer.Peek();
+        ////int requestBreadCount = customer.RequestBreadCount();
+        //int requestBreadCount = customer.getBreadState.RequestBreadCount();
+
+        //if (currentBreadCount >= requestBreadCount)
+        //{
+        //    List<GameObject> breadsToGive = new List<GameObject>();
+        //    for (int i = 0; i < requestBreadCount; i++)
+        //    {
+        //        breadsToGive.Add(breads[0]);
+        //        breads.RemoveAt(0);
+        //    }
+        //    currentBreadCount -= requestBreadCount;
+
+        //    //customer.ReceiveBreads(breadsToGive);
+        //    customer.getBreadState.ReceiveBreads(breadsToGive);
+        //    enteredCustomer.Dequeue();
+        //}
+        //else
+        //{
+        //    yield return new WaitForSeconds(1f);
+        //}
+        //isProcessingCustomer = false;
     }
 
     IEnumerator RequestBreadCoroutine()
@@ -88,9 +131,8 @@ public class SellBox : MonoBehaviour
         }
         if (other.gameObject.CompareTag("Customer"))
         {
-            //Debug.Log("customer");
             Customer cust = other.gameObject.GetComponent<Customer>();
-            enteredCustomer.Enqueue(cust);
+            enteredCustomer.Add(cust);
         }
     }
 
@@ -109,16 +151,16 @@ public class SellBox : MonoBehaviour
 
         currentBreadCount++;
         breads.Add(receivedBread);
-
+        breadReady.Add(false);
 
         audioSource.clip = putBreadSound;
         audioSource.loop = true;
         audioSource.Play();
 
-        StartCoroutine(MoveBreadToSlot(receivedBread));
+        StartCoroutine(MoveBreadToSlot(receivedBread, breads.Count-1));
     }
 
-    IEnumerator MoveBreadToSlot(GameObject bread)
+    IEnumerator MoveBreadToSlot(GameObject bread, int index)
     {
         Vector3 startPos = bread.transform.position;
 
@@ -149,7 +191,20 @@ public class SellBox : MonoBehaviour
         bread.transform.rotation = Quaternion.Euler(0, 0, 0);
         bread.transform.SetParent(breadSlot);
 
+        breadReady[index] = true;
+
         audioSource.Stop();
+    }
+
+    public void customerRemove(Customer customer)
+    {
+        for(int i=0; i<enteredCustomer.Count; i++)
+        {
+            if(enteredCustomer[i] == customer)
+            {
+                enteredCustomer.RemoveAt(i);
+            }
+        }
     }
 
 }

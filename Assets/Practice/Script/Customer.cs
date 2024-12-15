@@ -19,9 +19,7 @@ public class Customer : MonoBehaviour
 
     public ICustomerState currentState;
     public CustomerManager manager { get; private set; }
-    //public EventManager eventManager { get; private set; }
 
-    //public bool sitting { get; private set; }
     bool sitting = false;
     public bool willRequestSeat = false;
 
@@ -32,7 +30,6 @@ public class Customer : MonoBehaviour
     public RequestSeatState requestSeatState;
 
     bool stateChanged = false;
-    //public bool isSeat = false;
 
     int currentBreadCount = 0;
     public List<GameObject> breads = new List<GameObject>();
@@ -136,20 +133,47 @@ public class Customer : MonoBehaviour
         }
     }
 
-    public void GetBag(GameObject bag)
+    public void UpdateDestination(Vector3 newPos)
+    {
+        if (currentState == checkOutState)
+        {
+            checkOutState.UpdateDestination(newPos);
+        }
+    }
+
+    //public void HasReached(bool hasReached)
+    //{
+    //    //return hasReached;
+    //    if (currentState == checkOutState)
+    //        checkOutState.isAtCounter = hasReached;
+    //}
+
+    public bool isCashingState()
     {
         if(currentState == checkOutState)
+            return true;
+        return false;
+    }
+
+    public void GetBag(GameObject bag)
+    {
+        if (currentState == checkOutState)
         {
             checkOutState.GetBag(bag);
             this.bag = bag;
         }
     }
 
-    public void SetBreads(List<GameObject> receivedBreads)
+    public void SetBread(GameObject bread)
     {
-        breads.AddRange(receivedBreads);
-        currentBreadCount += receivedBreads.Count;
+        breads.Add(bread);
+        currentBreadCount++;
     }
+
+    //public int GetBreadsCount()
+    //{
+    //    return breads.Count;
+    //}
 
     public List<GameObject> GetBreads()
     {
@@ -170,11 +194,11 @@ public class Customer : MonoBehaviour
         return transform.Find("BreadStackPoint").position;
     }
 
-    public void SetCustomerCheckOutEnd()
-    {
-        checkOutState.checkOutEnded = true;
-        //Debug.Log("CheckOutState. checkoutended" +  checkOutState.checkOutEnded);
-    }
+    //public void SetCustomerCheckOutEnd()
+    //{
+    //    checkOutState.checkOutEnded = true;
+    //    //Debug.Log("CheckOutState. checkoutended" +  checkOutState.checkOutEnded);
+    //}
 
     public void moveToFirstWaitingSeatPos(Vector3 targetPos)
     {

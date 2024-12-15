@@ -12,6 +12,7 @@ public class Counter : MonoBehaviour
     Customer cashingCustomer;
     bool playerIsCashing = false;
     bool alreadyCashedCustomer = false;
+    bool customerReadyToCash = false;
 
     GameObject bag;
 
@@ -34,20 +35,14 @@ public class Counter : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if(playerIsCashing && cashingCustomer!=null)
+        //if(playerIsCashing && cashingCustomer != null && !alreadyCashedCustomer)
         //{
-        //    checkingOut();
+        //    if(cashingCustomer.isCashingState())
+        //    {
+        //        checkingOut();
+        //        alreadyCashedCustomer=true;
+        //    }
         //}
-
-        if(playerIsCashing && cashingCustomer != null && !alreadyCashedCustomer)
-        {
-            if(cashingCustomer.currentState is CheckOutState)
-            {
-                Debug.Log("이거 몇번 돼");
-                checkingOut();
-                alreadyCashedCustomer = true;
-            }
-        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -55,11 +50,27 @@ public class Counter : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             EventManager.OnArrowAction(3);
-            playerIsCashing = true;
+            //playerIsCashing = true;
+            //StartCoroutine(delayCashing());
+            StartCoroutine(DelayCashing("player"));
         }
         else if(other.gameObject.CompareTag("Customer"))
         {
             cashingCustomer = other.gameObject.GetComponent<Customer>();
+            StartCoroutine(DelayCashing("customer"));
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if(other.gameObject.CompareTag("Player"))
+        {
+            if (cashingCustomer.isCashingState() && !alreadyCashedCustomer
+                && playerIsCashing && customerReadyToCash)
+            {
+                checkingOut();
+                alreadyCashedCustomer = true;
+            }
         }
     }
 
@@ -69,11 +80,26 @@ public class Counter : MonoBehaviour
         {
             playerIsCashing = false;
         }
+        if (other.gameObject.CompareTag("Customer"))
+        {
+            customerReadyToCash= false;
+        }
+    }
+
+    IEnumerator DelayCashing(string type)
+    {
+        yield return new WaitForSeconds(0.5f);
+        if(type == "player")
+            playerIsCashing=true;
+        else if(type == "customer")
+        {
+            if(cashingCustomer != null)
+                customerReadyToCash = true;
+        }
     }
 
     void checkingOut()
     {
-        Debug.Log("checking out");
         audioSource.PlayOneShot(cashSound);
 
         alreadyCashedCustomer = true;
@@ -90,41 +116,38 @@ public class Counter : MonoBehaviour
 
     IEnumerator MoveBreadsToBag(List<GameObject> breads)
     {
-        //Vector3 lastBreadPos = Vector3.zero;
-
         while (breads.Count > 0)
         {
-            // 가장 마지막 빵을 가져오기
             GameObject bread = breads[breads.Count - 1];
             bread.transform.rotation = Quaternion.Euler(0, 90f, 0);
 
             Vector3 startPos = bread.transform.position;
             Vector3 targetPos = bag.transform.position;
-
-            //lastBreadPos = startPos;
+            Vector3 midPos = new Vector3(targetPos.x, targetPos.y + 2, targetPos.z);
 
             float elapsedTime = 0f;
-            float duration = 0.2f;
+            float duration = 0.3f;
+            float halfDuration = duration / 2;
 
-            // 1초 동안 빵을 부드럽게 이동
-            while (elapsedTime < duration)
+            while (elapsedTime < halfDuration)
             {
-                bread.transform.position = Vector3.Lerp(startPos,
-                    targetPos, (elapsedTime / duration));
-
+                bread.transform.position = Vector3.Lerp(startPos, midPos, (elapsedTime / halfDuration));
                 elapsedTime += Time.deltaTime;
-
                 yield return null;
             }
 
-            // 빵을 정확한 위치로 설정
+            float secondHalfElapsedTime = 0;
+            while (secondHalfElapsedTime < halfDuration)
+            {
+                bread.transform.position = Vector3.Lerp(midPos, targetPos, (secondHalfElapsedTime / halfDuration));
+                secondHalfElapsedTime += Time.deltaTime;
+                yield return null;
+            }
+
             bread.transform.position = targetPos;
 
-            // 고객에서 빵을 제거
-            //customer.RemoveBread(bread);
             cashingCustomer.RemoveBread(bread);
 
-            // 빵 삭제
             Destroy(bread);
         }
 
@@ -138,11 +161,8 @@ public class Counter : MonoBehaviour
 
     IEnumerator delayCheckingOut()
     {
-        yield return new WaitForSeconds(2f);
-
-
-        //Debug.Log("delay checking out");
-        cashingCustomer.SetCustomerCheckOutEnd();
+        yield return new WaitForSeconds(1f);
+        //cashingCustomer.SetCustomerCheckOutEnd();
         bag = null;
         cashingCustomer = null;
         alreadyCashedCustomer = false;

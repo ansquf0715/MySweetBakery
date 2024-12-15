@@ -21,18 +21,17 @@ public class IdleState : ICustomerState
     }
     public void Enter() 
     {
-        //Debug.Log("Enter");
         customer.StartCoroutine(WaitForGetBread());
     }
 
     public void Execute() { }
+
     public void Exit() { }
 
     IEnumerator WaitForGetBread()
     {
         yield return new WaitForSeconds(1f);
         customer.ChangeState(customer.getBreadState);
-        //customer.ChangeState(customer.requestSeatState);
     }
 }
 
@@ -43,40 +42,42 @@ public class GetBreadState : ICustomerState
     CustomerManager manager;
 
     int requestBreadCount;
+    int currentBreadCount;
     Transform assignedBreadPos;
 
     Sprite breadSprite;
     AudioClip getBreadClip;
+
+    SellBox sellBox;
 
     public GetBreadState(Customer customer)
     {
         this.customer = customer;
         this.agent = customer.agent;
         this.manager = customer.manager;
-
+        currentBreadCount = 0;
         breadSprite = Resources.Load<Sprite>("Croissant");
-        //getBreadClip = Resources.Load<AudioClip>("Get_Object");
+        getBreadClip = Resources.Load<AudioClip>("Get_Object");
+        sellBox = GameObject.FindObjectOfType<SellBox>();
     }
-    public void Enter() 
+    public void Enter()
     {
-
         decideRequestBread();
         MoveToBreadStand();
     }
-    public void Execute() 
+    public void Execute()
     {
     }
-    public void Exit() 
+    public void Exit()
     {
-        //customer.gameObject.SetActive(false);
         customer.orderCount.gameObject.SetActive(false);
         manager.LeavingBreadPos(customer);
+        sellBox.customerRemove(customer);
     }
 
     void decideRequestBread()
     {
         requestBreadCount = Random.Range(1, 4);
-        //Debug.Log("»§ °¹¼ö" + requestBreadCount);
         customer.requestBreadCount = requestBreadCount;
     }
 
@@ -84,129 +85,109 @@ public class GetBreadState : ICustomerState
     {
         Transform assignedPos = manager.AssignBreadPositionToCustomer(customer);
         assignedBreadPos = assignedPos;
-        if(assignedPos != null)
+        if (assignedPos != null)
         {
-            //Debug.Log("assigned POs" + assignedPos.position);
             agent.SetDestination(assignedPos.position);
             agent.isStopped = false;
-
             customer.StartCoroutine(WaitForCustomerArrive());
-        }
-        else
-        {
-            Debug.Log("No space near bread");
         }
     }
 
     IEnumerator WaitForCustomerArrive()
     {
-        //yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
-        //&& !agent.pathPending);
-        yield return new WaitUntil(() =>
-        !agent.pathPending && agent.remainingDistance <= 0.2f);
+        yield return new WaitUntil(() => agent.velocity.sqrMagnitude >= 0.2f * 0.2f
+        && agent.remainingDistance <= 0.5f);
 
         agent.isStopped = true;
-        ArriveAtBreadStand();
-    }
 
-    void ArriveAtBreadStand()
-    {
-        customer.StartCoroutine(rotateToTarget());
-    }
-
-    IEnumerator rotateToTarget()
-    {
-        float rotationSpeed = 2f;
-
+        Quaternion startRot = customer.transform.rotation;
         Quaternion targetRot = assignedBreadPos.rotation;
-        float elapsed = 0f;
-        float duration = 1f;
 
-        while(elapsed < duration)
+        float duration = 1.0f;
+        float elapsed = 0;
+
+        while (elapsed < duration)
         {
-            customer.transform.rotation = Quaternion.Slerp(customer.transform.rotation,
-                targetRot, (elapsed/duration));
             elapsed += Time.deltaTime;
+            customer.transform.rotation = Quaternion.Slerp(startRot, targetRot,
+                (elapsed / duration));
             yield return null;
         }
-        customer.transform.rotation = targetRot;
 
+        customer.transform.rotation = targetRot;
         SetUI();
-        RequestBreadCount();
+        customer.StartCoroutine(requestBreads());
     }
 
     void SetUI()
     {
         customer.canvas.gameObject.SetActive(true);
-        //customer.orderSprite = breadSprite;
         customer.orderObj.sprite = breadSprite;
         customer.orderCount.text = requestBreadCount.ToString();
     }
 
-    //void receiveBreads(Customer customer, List<GameObject> receivedBreads)
-    //{
-    //    customer.StartCoroutine(MoveBreadsToStack(receivedBreads));
-    //}
-
-    public int RequestBreadCount()
+    IEnumerator requestBreads()
     {
-        return requestBreadCount;
-    }
-
-    public void ReceiveBreads(List<GameObject> receivedBreads)
-    {
-        customer.StartCoroutine(MoveBreadsToStack(receivedBreads));
-    }
-
-    IEnumerator MoveBreadsToStack(List<GameObject> receivedBreads)
-    {
-        Transform breadStackPoint = customer.transform.Find("BreadStackPoint");
-
-        float breadHeight = 0.3f;
-        //float moveDuration = 0.5f;
-        AudioSource audioSource = customer.GetComponent<AudioSource>();
-        AudioClip getObjectsClip = Resources.Load<AudioClip>("Get_Object");
-
-        for (int i = 0; i < receivedBreads.Count; i++)
+        while(currentBreadCount != requestBreadCount)
         {
-            GameObject bread = receivedBreads[i];
-            Vector3 startPos = bread.transform.position;
-            Vector3 endPos = breadStackPoint.position
-                + new Vector3(0, breadHeight * i, 0);
-
-            float duration = 0.5f;
-            float elapsed = 0f;
-
-            while (elapsed < duration)
+            GameObject bread = sellBox.CustomerRequestBread(customer);
+            if(bread != null)
             {
-                elapsed += Time.deltaTime;
-                bread.transform.position = Vector3.Lerp(startPos, endPos, (elapsed / duration));
-                yield return null;
+                yield return customer.StartCoroutine(moveBreads(bread));
             }
+            else
+            {
+                yield return new WaitForSeconds(1f);
+            }
+        }
+        customer.StartCoroutine(delay());
+    }
 
-            audioSource.PlayOneShot(getObjectsClip);
+    IEnumerator moveBreads(GameObject bread)
+    {
+        float breadHeight = 0.3f;
 
-            bread.transform.parent = breadStackPoint;
-            bread.transform.localPosition = new Vector3(0, breadHeight * i, 0);
-            bread.transform.localRotation = Quaternion.Euler(0, 90, 0);
+        Transform breadStackPoint = customer.transform.Find("BreadStackPoint");
+        Vector3 startPos = bread.transform.position;
+        Vector3 endPos = breadStackPoint.position
+            + new Vector3(0, breadHeight * currentBreadCount, 0);
+        Vector3 targetPos = Vector3.Lerp(startPos, endPos, 0.5f);
+        targetPos.y += 1f;
+
+        float duration = 0.3f;
+        float elapsed = 0f;
+
+        while(elapsed < duration)
+        {
+            if(elapsed < duration/2)
+            {
+                bread.transform.position = Vector3.Lerp(startPos, targetPos,
+                    elapsed / (duration / 2));
+            }
+            else
+            {
+                bread.transform.position = Vector3.Lerp(targetPos, endPos,
+                    (elapsed - duration / 2) / (duration / 2));
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
         }
 
-        customer.SetBreads(receivedBreads);
+        bread.transform.parent = breadStackPoint;
+        bread.transform.localPosition = new Vector3(0, breadHeight*currentBreadCount, 0);
+        bread.transform.localRotation = Quaternion.Euler(0, 90f, 0);
 
-        yield return new WaitForSeconds(1f);
-        customer.ChangeState(customer.checkOutState);
-
-        //customer.StartCoroutine(delay());
+        currentBreadCount++;
+        AudioSource audio = customer.GetComponent<AudioSource>();
+        audio.PlayOneShot(getBreadClip);
+        customer.SetBread(bread);
     }
 
     IEnumerator delay()
     {
         yield return new WaitForSeconds(1f);
 
-        if (customer.willRequestSeat)
-            customer.ChangeState(customer.requestSeatState);
-        else
-            customer.ChangeState(customer.checkOutState);
+        customer.ChangeState(customer.checkOutState);
     }
 
 }
@@ -217,9 +198,13 @@ public class CheckOutState : ICustomerState
     NavMeshAgent agent;
     CustomerManager manager;
 
+    public bool isAtCounter = false;
     public bool checkOutEnded;
 
     Sprite counterSprite;
+
+    float checkInterval = 1.0f;
+    float nextCheckTime = 0f;
 
     public CheckOutState(Customer customer)
     {
@@ -228,26 +213,58 @@ public class CheckOutState : ICustomerState
         this.manager = customer.manager;
 
         counterSprite = Resources.Load<Sprite>("Pay");
+        isAtCounter = false;
     }
 
-    public void Enter() 
+    public void Enter()
     {
-        checkOutEnded = false;
+        Vector3 initialPos = new Vector3(-2f, 0.5f, -1.5f);
+        agent.SetDestination(initialPos);
         agent.isStopped = false;
-        Debug.Log("CheckoutPos");
         SetUI();
-        MoveToCounter();
+        customer.StartCoroutine(WaitUntilArrive());
     }
-    public void Execute() 
+    public void Execute()
     {
-        if(checkOutEnded)
+
+    }
+    public void Exit()
+    {
+        manager.leavingCustomerAtCounter(customer);
+    }
+
+    IEnumerator WaitUntilArrive()
+    {
+        yield return new WaitUntil(() => agent.velocity.sqrMagnitude >= 0.2f * 0.2f
+            && agent.remainingDistance <= 0.5f);
+
+        manager.addCustomerToCounter(customer);
+    }
+
+    public void UpdateDestination(Vector3 newPos)
+    {
+        if(!isAtCounter)
         {
-            customer.ChangeState(customer.leaveStoreState);
+            isAtCounter = true;
+            agent.SetDestination(newPos);
         }
+        else
+        {
+            agent.isStopped = false;
+            agent.SetDestination(newPos);
+        }
+        customer.StartCoroutine(waitToArriveAtCounter());
     }
-    public void Exit() 
+
+    IEnumerator waitToArriveAtCounter()
     {
-        EventManager.CustomerPay(customer, customer.requestBreadCount);
+        yield return new WaitUntil(() => agent.velocity.sqrMagnitude >= 0.2f * 0.2f
+            && agent.remainingDistance <= 0.5f && !agent.pathPending);
+
+        if (customer.willRequestSeat)
+            customer.ChangeState(customer.requestSeatState);
+        else
+            customer.StartCoroutine(SmoothRotateTowards());
     }
 
     void SetUI()
@@ -262,26 +279,23 @@ public class CheckOutState : ICustomerState
             1.4f, 1.4f, 1.4f);
     }
 
-    void MoveToCounter()
+    IEnumerator SmoothRotateTowards()
     {
-        Vector3 counterPos = manager.AssignCounterPositionToCustomer(customer);
-        agent.SetDestination(counterPos);
-        customer.StartCoroutine(WaitForArrival());
-    }
-
-    IEnumerator WaitForArrival()
-    {
-        yield return new WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance
-        && !agent.pathPending);
-
         agent.isStopped = true;
-        disableUI();
+        Quaternion startRotation = customer.transform.rotation;
+        Quaternion endRotation = Quaternion.Euler(0, 90, 0);
 
-        //¿©±â°¡ ¹®Á¦
-        //if (customer.willRequestSeat)
-        //    customer.ChangeState(customer.requestSeatState);
+        float elapsed = 0.0f;
+        //float duration = 1.0f;
+        float duration = 0.3f;
 
-        customer.StartCoroutine(RotateToTarget());
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            customer.transform.rotation = Quaternion.Slerp(startRotation, endRotation, elapsed / duration);
+            yield return null;
+        }
+        customer.transform.rotation = endRotation;
     }
 
     void disableUI()
@@ -289,25 +303,8 @@ public class CheckOutState : ICustomerState
         customer.canvas.gameObject.SetActive(false);
     }
 
-    IEnumerator RotateToTarget()
-    {
-        Quaternion targetRot = Quaternion.Euler(0, 90, 0);
-        float elapsed = 0f;
-        float duration = 1f;
-
-        while(elapsed < duration)
-        {
-            customer.transform.rotation = Quaternion.Slerp(customer.transform.rotation,
-                targetRot, (elapsed / duration));
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        customer.transform.rotation = targetRot;
-    }
-
     public void GetBag(GameObject bag)
     {
-        Debug.Log("customer get bag?");
         customer.StartCoroutine(moveBagToCustomer(bag));
     }
 
@@ -315,14 +312,8 @@ public class CheckOutState : ICustomerState
     {
         Vector3 bagStartPos = bag.transform.position;
 
-        Transform breadStackPoint 
+        Transform breadStackPoint
             = customer.gameObject.transform.Find("BreadStackPoint");
-
-        if (breadStackPoint == null)
-        {
-            Debug.LogError("BreadStackPoint not found in customer.");
-            yield break;
-        }
 
         bag.transform.SetParent(breadStackPoint);
         bag.transform.localPosition = Vector3.zero;
@@ -339,10 +330,9 @@ public class CheckOutState : ICustomerState
         }
 
         bag.transform.position = breadStackPoint.position;
-
+        disableUI();
         yield return new WaitForSeconds(0.5f);
-        manager.addHandledCustomer();
-        checkOutEnded = true;
+        customer.ChangeState(customer.leaveStoreState);
     }
 
 }
@@ -360,11 +350,13 @@ public class LeaveStoreState : ICustomerState
         this.manager = customer.manager;
     }
 
-    public void Enter() 
+    public void Enter()
     {
+        EventManager.CustomerPay(customer, customer.requestBreadCount);
+
         Debug.Log("Leave Store State");
         //setUI();
-        manager.customerEndedCheckout(customer);
+        //manager.customerEndedCheckout(customer);
 
 
         agent.isStopped = false;
@@ -380,7 +372,7 @@ public class LeaveStoreState : ICustomerState
     }
 
     public void Execute() { }
-    public void Exit() 
+    public void Exit()
     {
     }
 
@@ -423,17 +415,19 @@ public class RequestSeatState : ICustomerState
         smile = Resources.Load<ParticleSystem>("VFX_EmojiSmile");
     }
 
-    public void Enter() 
+    public void Enter()
     {
+        Debug.Log("Seat Enter");
+
         SetUI();
         agent.isStopped = false;
         checkForSeat();
     }
-    public void Execute() 
+    public void Execute()
     {
 
     }
-    public void Exit() 
+    public void Exit()
     {
     }
 
@@ -453,7 +447,7 @@ public class RequestSeatState : ICustomerState
     {
         (Vector3 pos, bool check) = manager.assignCustomerSeatPos(customer);
 
-        if(check)
+        if (check)
         {
             Vector3 newPos = pos;
             newPos.x += 0.5f;
@@ -466,7 +460,7 @@ public class RequestSeatState : ICustomerState
         }
         else
         {
-            if(!isCheckingSeat)
+            if (!isCheckingSeat)
             {
                 agent.SetDestination(pos);
                 isCheckingSeat = true;
@@ -477,10 +471,10 @@ public class RequestSeatState : ICustomerState
 
     IEnumerator waitAndRetry()
     {
-        while(isCheckingSeat)
+        while (isCheckingSeat)
         {
             yield return new WaitForSeconds(1f);
-            
+
             checkForSeat();
         }
     }
@@ -523,7 +517,7 @@ public class RequestSeatState : ICustomerState
         Vector3 startPos = new Vector3(-5.4f, 1.5f, 7.7f);
         float yOffset = 0.3f;
 
-        for(int i=customer.breads.Count-1; i>=0; i--)
+        for (int i = customer.breads.Count - 1; i >= 0; i--)
         {
             GameObject bread = customer.breads[i];
 
@@ -543,10 +537,10 @@ public class RequestSeatState : ICustomerState
         Vector3 startPos = bread.transform.position;
         float elapsed = 0f;
 
-        while(elapsed < duration)
+        while (elapsed < duration)
         {
             bread.transform.position = Vector3.Lerp(startPos,
-                targetPos, (elapsed/duration));
+                targetPos, (elapsed / duration));
             elapsed += Time.deltaTime;
             yield return null;
         }
@@ -583,7 +577,7 @@ public class RequestSeatState : ICustomerState
 
     void makeDirty()
     {
-        for(int i=0; i<customer.breads.Count; i++)
+        for (int i = 0; i < customer.breads.Count; i++)
         {
             customer.destroyBreads();
         }
@@ -596,22 +590,7 @@ public class RequestSeatState : ICustomerState
         trash = GameObject.Instantiate(trashPrefab,
             trashPos, Quaternion.identity);
     }
-    
+
 }
 
 
-
-//public class CustomerState : MonoBehaviour
-//{
-//    // Start is called before the first frame update
-//    void Start()
-//    {
-        
-//    }
-
-//    // Update is called once per frame
-//    void Update()
-//    {
-        
-//    }
-//}

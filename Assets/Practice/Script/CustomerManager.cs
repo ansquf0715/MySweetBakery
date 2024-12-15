@@ -45,9 +45,10 @@ public class CustomerManager : MonoBehaviour
     List<Transform> breadStandPositions = new List<Transform>();
     List<KeyValuePair<Customer, bool>> breadStandUsed = new List<KeyValuePair<Customer, bool>>();
 
-    //계산대 대기줄은 이걸 기준으로 x값만 조절해주면 됨
     float counterSpacing = 1.5f;
-    Queue<Customer> checkOutQueue = new Queue<Customer>();
+    //Dictionary<Customer, float> customerDistances = new Dictionary<Customer, float>();
+    //List<Customer> customerOrder = new List<Customer>();
+    Queue<Customer> customerWaitingOrder=  new Queue<Customer>();
 
     //seat을 원하는 customer
     List<Seat> seats = new List<Seat>();
@@ -64,7 +65,7 @@ public class CustomerManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        EventManager.FirstQuestIsReady();
+        //EventManager.FirstQuestIsReady();
 
         EventManager.OnNewSeatAvailable += handleNewSeat;
 
@@ -94,10 +95,10 @@ public class CustomerManager : MonoBehaviour
 
             createdCustomers++;
 
-            if (createdCustomers % 3 == 0)
-            {
-                customerComp.willRequestSeat = true;
-            }
+            //if (createdCustomers % 3 == 0)
+            //{
+            //    customerComp.willRequestSeat = true;
+            //}
 
             //customerComp.willRequestSeat = true;
 
@@ -114,7 +115,6 @@ public class CustomerManager : MonoBehaviour
                 if (!breadStandUsed[i].Value)
                 {
                     breadStandUsed[i] = new KeyValuePair<Customer, bool>(customer, true);
-                    //Debug.Log("Assigned position: " + breadStandPositions[i].position);
                     return breadStandPositions[i];
                 }
             }
@@ -122,7 +122,6 @@ public class CustomerManager : MonoBehaviour
         }
     }
 
-    //고객이 bread pos를 떠나면, 기다리고 있는 customer에게 연락하기
     public void LeavingBreadPos(Customer customer)
     {
         for(int i=0; i<breadStandUsed.Count; i++)
@@ -130,73 +129,50 @@ public class CustomerManager : MonoBehaviour
             if (breadStandUsed[i].Key == customer)
             {
                 breadStandUsed[i] = new KeyValuePair<Customer, bool>(null, false);
-                
-                SpawnCustomer(1);
+                StartCoroutine(SpawnCustomer(1));
                 break;
             }
         }
     }
 
-    public Vector3 AssignCounterPositionToCustomer(Customer customer)
+    public void addCustomerToCounter(Customer customer)
     {
-        checkOutQueue.Enqueue(customer);
-        EventManager.CustomerAtCounter(customer);
-        int customerIndex = GetCustomerQueueIndex(customer);
-
-        if(customerIndex == -1)
+        if(!customerWaitingOrder.Contains(customer))
         {
-            return Vector3.zero;
+            customerWaitingOrder.Enqueue(customer);
+            UpdateCustomerPos();
         }
-
-        Vector3 newPos = customerCounterPos.position;
-        newPos.x = customerCounterPos.position.x - (customerIndex * 1.2f);
-        newPos.y = customerCounterPos.position.y;
-        newPos.z = customerCounterPos.position.z;
-        return newPos;
     }
 
-    int GetCustomerQueueIndex(Customer customer)
+    void UpdateCustomerPos()
     {
-        int index = 0;
-        foreach(var c in checkOutQueue)
+        int i = 0;
+        foreach (Customer cust in customerWaitingOrder)
         {
-            if(c == customer)
-                return index;
-            index++;
+            Vector3 newPos = customerCounterPos.position - new Vector3(1.2f * i, 0, 0);
+            cust.UpdateDestination(newPos);
+            i++;
         }
-        return -1;
     }
 
-    public void customerArrivedAtCounter(Customer customer)
+    public void leavingCustomerAtCounter(Customer customer)
     {
-        StartCoroutine(DelayMoveCustomers(customer));
-    }
-
-    IEnumerator DelayMoveCustomers(Customer customer)
-    {
-        yield return new WaitForSeconds(2f);
-
-        moveRestCustomers(customer);
-    }
-
-    void moveRestCustomers(Customer customer)
-    {
-        int index = 0;
-        foreach (var c in checkOutQueue)
+        if(customerWaitingOrder.Count > 0 && customerWaitingOrder.Peek() ==  customer)
         {
-            if (c == customer)
-                continue;
-
-            Vector3 newPos = customerCounterPos.position - new Vector3(
-                index * counterSpacing, 0, 0f);
-
-            StartCoroutine(CheckNextCustomerArrive(c, newPos));
-
-            index++;
-
-            StartCoroutine(delay());
+            customerWaitingOrder.Dequeue();
+            moveRestWaitingCounterCustomers();
         }
+    }
 
+    void moveRestWaitingCounterCustomers()
+    {
+        int i = 0;
+        foreach (Customer customer in customerWaitingOrder)
+        {
+            Vector3 newPos = customerCounterPos.position - new Vector3(1.2f * i, 0, 0);
+            customer.UpdateDestination(newPos);
+            i++;
+        }
     }
 
     IEnumerator delay()
@@ -214,17 +190,17 @@ public class CustomerManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
     }
 
-    public void customerEndedCheckout(Customer customer)
-    {
-        Queue<Customer> newQ = new Queue<Customer>();
-        foreach(var c in checkOutQueue)
-        {
-            if(c!=customer)
-                newQ.Enqueue(c);
-        }
-        checkOutQueue = newQ;
-        customerArrivedAtCounter(customer);
-    }
+    //public void customerEndedCheckout(Customer customer)
+    //{
+    //    Queue<Customer> newQ = new Queue<Customer>();
+    //    foreach(var c in checkOutQueue)
+    //    {
+    //        if(c!=customer)
+    //            newQ.Enqueue(c);
+    //    }
+    //    checkOutQueue = newQ;
+    //    customerArrivedAtCounter(customer);
+    //}
 
     public void destroyCustomer(Customer customer)
     {
