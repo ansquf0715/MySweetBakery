@@ -13,8 +13,8 @@ public class EventManager : MonoBehaviour
     public static event Action<GameObject> OnPlayerGiveBreadToSellBox; //player가 sellbox에 빵을 줌
 
     public static event Action<Customer> OnCustomerAtCounter; // customerManager가 들어온 customer가 있다고 전달
-    //public static event Action<GameObject> OnBagReady; //계산이 완료된 빵
     public static event Action<Customer, int> OnCustomerPay; //고객이 돈을 지불했다는 이벤트
+    public static event Action<int> OnSeatPay; //자리를 이용한 고객이 돈을 지불
 
     public static event Action OnFirstQuestIsReady; //첫번째 quest를 생성할 준비가 됨
 
@@ -60,6 +60,11 @@ public class EventManager : MonoBehaviour
         OnCustomerPay?.Invoke(customer, amount);
     }
 
+    public static void SeatPay(int amount)
+    {
+        OnSeatPay?.Invoke(amount);
+    }
+
     public static void FirstQuestIsReady()
     {
         OnFirstQuestIsReady?.Invoke();
@@ -82,7 +87,6 @@ public class EventManager : MonoBehaviour
 
     public static void ArrowAction(int arrowId)
     {
-        //Debug.Log("arrowId" + arrowId);
         OnArrowAction?.Invoke(arrowId);
     }
 }

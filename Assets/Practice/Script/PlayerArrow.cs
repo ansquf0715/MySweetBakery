@@ -55,7 +55,7 @@ public class PlayerArrow : MonoBehaviour
 
         GameObject quest1obj = GameObject.Find("Quest1");
         Transform quest1floor = quest1obj.transform.Find("Quest1Floor");
-        arrowList.Add(new Arrow(5, quest1floor, 2f));
+        arrowList.Add(new Arrow(5, quest1obj.transform, 2f));
 
         nowAvailableArrows = arrowList[0];
         arrowIsAvailable = true;
@@ -111,36 +111,41 @@ public class PlayerArrow : MonoBehaviour
 
     void UpdateArrowState(int arrowId)
     {
-        if (arrowId == 5)
+        if (arrowInstance != null)
         {
-            StopAllCoroutines();
-            arrowIsAvailable = false;
-            Destroy(arrowInstance);
-        }
-        else
-        {
-            if (nowAvailableArrows.arrowId == arrowId)
+            if (arrowId == 5)
             {
-                nowAvailableArrows.isCompleted = true;
-
-
-                if (arrowId < arrowList.Count)
+                StopAllCoroutines();
+                arrowIsAvailable = false;
+                Destroy(arrowInstance);
+            }
+            else
+            {
+                if (nowAvailableArrows.arrowId == arrowId)
                 {
-                    StopAllCoroutines();
+                    nowAvailableArrows.isCompleted = true;
 
-                    nowAvailableArrows = arrowList[arrowId];
-                    Vector3 newPos = nowAvailableArrows.pointingObj.position;
-                    newPos.y += nowAvailableArrows.offset;
-                    if (arrowId == 4)
+
+                    if (arrowId < arrowList.Count)
                     {
-                        newPos.z -= 0.6f;
+                        StopAllCoroutines();
+
+                        nowAvailableArrows = arrowList[arrowId];
+                        Vector3 newPos = nowAvailableArrows.pointingObj.position;
+                        newPos.y += nowAvailableArrows.offset;
+                        if (arrowId == 4)
+                        {
+                            newPos.x = -6.5f;
+                            newPos.y = 2f;
+                            newPos.z = 7.5f;
+                        }
+
+                        arrowInstance.transform.position = newPos;
+                        //UpdateCanvasRotation();
+                        StartCoroutine(AnimateArrowUntilComplete(nowAvailableArrows));
                     }
 
-                    arrowInstance.transform.position = newPos;
-                    //UpdateCanvasRotation();
-                    StartCoroutine(AnimateArrowUntilComplete(nowAvailableArrows));
                 }
-
             }
         }
     }
@@ -155,17 +160,19 @@ public class PlayerArrow : MonoBehaviour
 
     IEnumerator AnimateArrowUntilComplete(Arrow arrow)
     {
-        while (!arrow.isCompleted)
+        if(arrowInstance != null)
         {
-            Vector3 originalPosition = arrowInstance.transform.position;
+            while (!arrow.isCompleted)
+            {
+                Vector3 originalPosition = arrowInstance.transform.position;
 
-            Vector3 downPosition = originalPosition;
-            downPosition.y -= 0.5f;
-            yield return MoveArrow(originalPosition, downPosition, 1);
+                Vector3 downPosition = originalPosition;
+                downPosition.y -= 0.5f;
+                yield return MoveArrow(originalPosition, downPosition, 1);
 
-            yield return MoveArrow(downPosition, originalPosition, 1);
+                yield return MoveArrow(downPosition, originalPosition, 1);
+            }
         }
-
     }
 
     IEnumerator MoveArrow(Vector3 start, Vector3 end, float duration)

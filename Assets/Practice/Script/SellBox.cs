@@ -39,26 +39,7 @@ public class SellBox : MonoBehaviour
     {
         if (nearPlayer && currentBreadCount < maxBreadCount)
             StartCoroutine(RequestBreadCoroutine());
-        //if (enteredCustomer.Count > 0)
-        //    StartCoroutine(ProcessCustomerRequest());
     }
-
-    //public GameObject CustomerRequestBread()
-    //{
-    //    for(int i=breads.Count-1; i>=0; i--)
-    //    {
-    //        if (breadReady[i])
-    //        {
-    //            currentBreadCount--;
-    //            GameObject bread = breads[i];
-    //            breads.RemoveAt(i);
-    //            breadReady.RemoveAt(i);
-
-    //            return bread;
-    //        }
-    //    }
-    //    return null;
-    //}
 
     public GameObject CustomerRequestBread(Customer customer)
     {
@@ -78,39 +59,6 @@ public class SellBox : MonoBehaviour
             }
         }
         return null; 
-    }
-
-
-    IEnumerator ProcessCustomerRequest()
-    {
-
-        yield return new WaitForSeconds(1f);
-
-        //isProcessingCustomer = true;
-
-        //Customer customer = enteredCustomer.Peek();
-        ////int requestBreadCount = customer.RequestBreadCount();
-        //int requestBreadCount = customer.getBreadState.RequestBreadCount();
-
-        //if (currentBreadCount >= requestBreadCount)
-        //{
-        //    List<GameObject> breadsToGive = new List<GameObject>();
-        //    for (int i = 0; i < requestBreadCount; i++)
-        //    {
-        //        breadsToGive.Add(breads[0]);
-        //        breads.RemoveAt(0);
-        //    }
-        //    currentBreadCount -= requestBreadCount;
-
-        //    //customer.ReceiveBreads(breadsToGive);
-        //    customer.getBreadState.ReceiveBreads(breadsToGive);
-        //    enteredCustomer.Dequeue();
-        //}
-        //else
-        //{
-        //    yield return new WaitForSeconds(1f);
-        //}
-        //isProcessingCustomer = false;
     }
 
     IEnumerator RequestBreadCoroutine()
@@ -164,7 +112,6 @@ public class SellBox : MonoBehaviour
     {
         Vector3 startPos = bread.transform.position;
 
-        //빵의 목표 위치
         int maxPerRow = 4;
         float breadWidth = 0.5f;
         float breadHeight = 0.5f;
@@ -173,16 +120,23 @@ public class SellBox : MonoBehaviour
         int floor = (currentBreadCount - 1) / maxPerRow;
 
         Vector3 targetPos = breadSlot.position
-        + new Vector3(row * breadWidth,  // 가로 위치
-                      floor * breadHeight, // 세로 위치 (아래로 이동)
-                      0); // Z 위치는 변하지 않음
-
+        + new Vector3(row * breadWidth,
+                      floor * breadHeight,
+                      0);
+        Vector3 midPos = Vector3.Lerp(startPos, targetPos, 0.5f) + new Vector3(0, 1, 0);
         float elapsedTime = 0f;
         float moveDuration = 0.5f;
 
+        while (elapsedTime < moveDuration / 2)
+        {
+            bread.transform.position = Vector3.Lerp(startPos, midPos, (elapsedTime / (moveDuration / 2)));
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
         while (elapsedTime < moveDuration)
         {
-            bread.transform.position = Vector3.Lerp(startPos, targetPos, (elapsedTime / moveDuration));
+            bread.transform.position = Vector3.Lerp(midPos, targetPos, ((elapsedTime - (moveDuration / 2)) / (moveDuration / 2)));
             elapsedTime += Time.deltaTime;
             yield return null;
         }
@@ -195,6 +149,41 @@ public class SellBox : MonoBehaviour
 
         audioSource.Stop();
     }
+
+
+    //IEnumerator MoveBreadToSlot(GameObject bread, int index)
+    //{
+    //    Vector3 startPos = bread.transform.position;
+
+    //    int maxPerRow = 4;
+    //    float breadWidth = 0.5f;
+    //    float breadHeight = 0.5f;
+
+    //    int row = (currentBreadCount - 1) % maxPerRow;
+    //    int floor = (currentBreadCount - 1) / maxPerRow;
+
+    //    Vector3 targetPos = breadSlot.position
+    //    + new Vector3(row * breadWidth, 
+    //                  floor * breadHeight, 
+    //                  0);
+    //    float elapsedTime = 0f;
+    //    float moveDuration = 0.5f;
+
+    //    while (elapsedTime < moveDuration)
+    //    {
+    //        bread.transform.position = Vector3.Lerp(startPos, targetPos, (elapsedTime / moveDuration));
+    //        elapsedTime += Time.deltaTime;
+    //        yield return null;
+    //    }
+
+    //    bread.transform.position = targetPos;
+    //    bread.transform.rotation = Quaternion.Euler(0, 0, 0);
+    //    bread.transform.SetParent(breadSlot);
+
+    //    breadReady[index] = true;
+
+    //    audioSource.Stop();
+    //}
 
     public void customerRemove(Customer customer)
     {

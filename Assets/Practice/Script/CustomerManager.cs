@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Newtonsoft.Json.Serialization;
 using System.Collections;
 using System.Collections.Generic;
@@ -46,8 +47,6 @@ public class CustomerManager : MonoBehaviour
     List<KeyValuePair<Customer, bool>> breadStandUsed = new List<KeyValuePair<Customer, bool>>();
 
     float counterSpacing = 1.5f;
-    //Dictionary<Customer, float> customerDistances = new Dictionary<Customer, float>();
-    //List<Customer> customerOrder = new List<Customer>();
     Queue<Customer> customerWaitingOrder=  new Queue<Customer>();
 
     //seat을 원하는 customer
@@ -55,7 +54,7 @@ public class CustomerManager : MonoBehaviour
     Queue<Customer> seatWaitingQueue = new Queue<Customer>();
 
     int createdCustomers = 0;
-    List<Customer> allCustomers = new List<Customer>();
+    //List<Customer> allCustomers = new List<Customer>();
     public int cashedCustomer = 0;
 
     bool isUpdatingSeats = false;
@@ -65,9 +64,10 @@ public class CustomerManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //EventManager.FirstQuestIsReady();
+        EventManager.FirstQuestIsReady();
 
         EventManager.OnNewSeatAvailable += handleNewSeat;
+        EventManager.OnSeatCleaned += handleCleanedSeat;
 
         for (int i = 0; i < customerBreadPos.childCount; i++)
         {
@@ -89,19 +89,23 @@ public class CustomerManager : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
+            if (count == 1)
+            {
+                yield return new WaitForSeconds(2f);
+            }
             GameObject newCustomer = Instantiate(customerPrefab, customerSpawnPos.position, Quaternion.identity);
             Customer customerComp = newCustomer.GetComponent<Customer>();
-            allCustomers.Add(customerComp);
+            //allCustomers.Add(customerComp);
 
             createdCustomers++;
 
-            //if (createdCustomers % 3 == 0)
-            //{
-            //    customerComp.willRequestSeat = true;
-            //}
+            if (createdCustomers % 5 == 0)
+            {
+                customerComp.willRequestSeat = true;
+            }
 
             //customerComp.willRequestSeat = true;
-
+            
             yield return new WaitForSeconds(2f);
         }
     }
@@ -164,6 +168,32 @@ public class CustomerManager : MonoBehaviour
         }
     }
 
+    public void checkSeatCustomerIsAtCounter(Customer customer)
+    {
+        Queue<Customer> tempQueue = new Queue<Customer>();
+        bool found = false;
+
+        while (customerWaitingOrder.Count > 0)
+        {
+            Customer currentCustomer = customerWaitingOrder.Dequeue();
+            if (currentCustomer.Equals(customer))
+            {
+                found = true;
+                continue;
+            }
+            tempQueue.Enqueue(currentCustomer);
+        }
+        while (tempQueue.Count > 0)
+        {
+            customerWaitingOrder.Enqueue(tempQueue.Dequeue());
+        }
+        if (found)
+        {
+            Debug.Log("찾았다!!!!!!!");
+            moveRestWaitingCounterCustomers();
+        }
+    }
+
     void moveRestWaitingCounterCustomers()
     {
         int i = 0;
@@ -175,31 +205,62 @@ public class CustomerManager : MonoBehaviour
         }
     }
 
-    IEnumerator delay()
+    void UpdateCustomerSeatWaitingPos()
     {
-        yield return new WaitForSeconds(1f);
-    }
-
-    IEnumerator CheckNextCustomerArrive(Customer customer, Vector3 targetPos)
-    {
-        while (Vector3.Distance(customer.transform.position, targetPos) > 0.1f)
+        int i = 0;
+        foreach (Customer cust in seatWaitingQueue)
         {
-            customer.transform.position = Vector3.MoveTowards(customer.transform.position, targetPos, Time.deltaTime);
-            yield return null;
+            Vector3 newPos = customerSeatWaitingPos - new Vector3(1.2f * i, 0, 0);
+            cust.seatUpdateDestination(newPos);
+            i++;
         }
-        yield return new WaitForSeconds(1f);
     }
 
-    //public void customerEndedCheckout(Customer customer)
+    public void addCustomerToSeat(Customer customer)
+    {
+        if (!seatWaitingQueue.Contains(customer))
+        {
+            seatWaitingQueue.Enqueue(customer);
+            UpdateCustomerSeatWaitingPos();
+        }
+    }
+
+    public void AssignSeatToCustomer(Customer customer = null)
+    {
+        if(seats.Count > 0 && seatWaitingQueue.Count > 0)
+        {
+            for (int i = 0; i < seats.Count; i++)
+            {
+                Seat seat = seats[i];
+                if (!seat.isUsed && !seat.isDirty && cashedCustomer>=2)
+                {
+                    seat.isUsed = true;
+
+                    Debug.Log("assign seat to customer");
+                    Customer assignedCustomer = seatWaitingQueue.Peek();
+                    assignedCustomer.SetSitting(true);
+                    assignedCustomer.seatUpdateDestination(seat.seatPos);
+
+                    seat.assignedCustomer = assignedCustomer;
+                    seatWaitingQueue.Dequeue();
+                    //UpdateWaitingSeatPositions();
+                    UpdateCustomerSeatWaitingPos();
+                    break;
+                }
+            }
+        }
+    }
+
+    //void UpdateWaitingSeatPositions()
     //{
-    //    Queue<Customer> newQ = new Queue<Customer>();
-    //    foreach(var c in checkOutQueue)
+    //    int i = 0;
+    //    foreach(Customer customer in seatWaitingQueue)
     //    {
-    //        if(c!=customer)
-    //            newQ.Enqueue(c);
+    //        Vector3 newPos = customerSeatWaitingPos - new Vector3(1.2f * i, 0, 0);
+    //        customer.UpdateDestination(newPos);
+    //        //UpdateCustomerSeatWaitingPos();
+    //        i++;
     //    }
-    //    checkOutQueue = newQ;
-    //    customerArrivedAtCounter(customer);
     //}
 
     public void destroyCustomer(Customer customer)
@@ -207,10 +268,10 @@ public class CustomerManager : MonoBehaviour
 
     }
 
-    public void addHandledCustomer()
+    public void checkHandledCustomer(Customer customer)
     {
         cashedCustomer++;
-        if(cashedCustomer == 5)
+        if(cashedCustomer == 1)
         {
             EventManager.FirstQuestIsReady();
         }
@@ -219,125 +280,38 @@ public class CustomerManager : MonoBehaviour
     void handleNewSeat(GameObject chair)
     {
         seats.Add(new Seat(chair));
+        AssignSeatToCustomer();
     }
 
-    public (Vector3, bool) assignCustomerSeatPos(Customer customer)
+    public GameObject leaveSeat(Customer customer, GameObject trash)
     {
-        foreach (var seat in seats)
-        {
-            if (!seat.isUsed && !seat.isDirty)
-            {
-                // Assign the seat to the customer
-                seat.isUsed = true;
-                seat.assignedCustomer = customer;
-
-                // Remove the customer from the waiting queue if they are present
-                if (seatWaitingQueue.Contains(customer))
-                {
-                    seatWaitingQueue = new Queue<Customer>(seatWaitingQueue.Where(c => c != customer));
-                }
-
-                // Return the seat position
-                return (seat.seatPos, true);
-            }
-        }
-
-        // If no seats are available, enqueue the customer and return a waiting position
-        if (!seatWaitingQueue.Contains(customer))
-            seatWaitingQueue.Enqueue(customer);
-
-        int waitingIndex = 0;
-        foreach (var c in seatWaitingQueue)
-        {
-            if (c == customer)
-                break;
-            waitingIndex++;
-        }
-
-        Vector3 waitingPos = customerSeatWaitingPos;
-        waitingPos.x -= waitingIndex * 1f; // Adjust the x-position based on the queue index
-
-        return (waitingPos, false);
-    }
-
-    public void NotifySeatAvailable()
-    {
-        if (seatWaitingQueue.Count > 0)
-        {
-            Customer nextCustomer = seatWaitingQueue.Peek();
-
-            foreach (var seat in seats)
-            {
-                if (!seat.isUsed && !seat.isDirty)
-                {
-                    // Assign seat to the next customer
-                    seat.isUsed = true;
-                    seat.assignedCustomer = nextCustomer;
-
-                    seatWaitingQueue.Dequeue(); // Remove from queue
-
-                    // Recheck and update customer position
-                    (Vector3 pos, bool success) = assignCustomerSeatPos(nextCustomer);
-                    if (success)
-                    {
-                        nextCustomer.moveToFirstWaitingSeatPos(pos);
-                    }
-                    break;
-                }
-            }
-        }
-
-        UpdateSeatWaitingQueuePos();
-    }
-
-    void UpdateSeatWaitingQueuePos()
-    {
-        int index = 0;
-
-        foreach (var customer in seatWaitingQueue)
-        {
-            // Calculate new waiting position based on queue index
-            Vector3 waitingPos = customerSeatWaitingPos;
-            waitingPos.x -= index * 1f; // Adjust x based on index
-
-            StartCoroutine(UpdateCustomerWaitingPosition(customer, waitingPos));
-            index++;
-        }
-    }
-
-    IEnumerator UpdateCustomerWaitingPosition(Customer customer, Vector3 waitingPos)
-    {
-        yield return new WaitForSeconds(0.5f); // Small delay for smooth transition
-        //customer.moveToFirstWaitingSeatPos(waitingPos);
-        customer.moveToWaitingPos(waitingPos);
-    }
-
-
-    public GameObject GetChair(Customer customer)
-    {
-        return seats[0].chair;
-    }
-
-    public void LeaveSeat(Customer customer, GameObject trash)
-    {
-        foreach(var seat in seats)
+        foreach(Seat seat in seats)
         {
             if(seat.assignedCustomer == customer)
             {
-                if(!seat.isDirty)
-                {
-                    seat.setTrash(trash);
-                    seat.isDirty = true;
-                    EventManager.SeatDirty(seat);
-                }
-                seat.assignedCustomer = null;
                 seat.isUsed = false;
+                seat.isDirty = true;
+                seat.assignedCustomer = null;
+                seat.trash = trash;
 
-                break;
-
+                EventManager.SeatDirty(seat);
+                return seat.chair;
             }
         }
+        return null;
+    }
 
-        NotifySeatAvailable();
+    void handleCleanedSeat(Seat seat)
+    {
+        for(int i=0; i<seats.Count; i++)
+        {
+            if(seat == seats[i])
+            {
+                seat.isDirty = false;
+                seat.trash = null;
+
+                AssignSeatToCustomer();
+            }
+        }
     }
 }

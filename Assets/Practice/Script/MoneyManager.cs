@@ -14,8 +14,8 @@ public class MoneyManager : MonoBehaviour
     List<KeyValuePair<GameObject, bool>> cashes = new List<KeyValuePair<GameObject, bool>>();
 
     public Transform moneySpawnPos;
-    float spacing = 0.5f;  
-    int rows = 3;          
+    float spacing = 0.5f;
+    int rows = 3;
     int columns = 4;
 
     public TextMeshProUGUI moneyText;
@@ -39,7 +39,7 @@ public class MoneyManager : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             EventManager.OnArrowAction(4);
 
@@ -50,15 +50,15 @@ public class MoneyManager : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if(other.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             playerIsGettingCash = false;
         }
     }
 
-    public bool PayMoney(int amount =1)
+    public bool PayMoney(int amount = 1)
     {
-        if(money >= amount)
+        if (money >= amount)
         {
             money -= amount;
             UpdateMoneyUI();
@@ -69,20 +69,20 @@ public class MoneyManager : MonoBehaviour
 
     IEnumerator RemoveCash()
     {
-        while(playerIsGettingCash)
+        while (playerIsGettingCash)
         {
-            for (int i = cashes.Count - 1; i >= 0; i--) 
+            for (int i = cashes.Count - 1; i >= 0; i--)
             {
                 var cashPair = cashes[i];
                 if (cashPair.Value)
                 {
                     GameObject cash = cashPair.Key;
-                    cashes.RemoveAt(i); 
+                    cashes.RemoveAt(i);
                     Destroy(cash);
 
                     money++;
                     UpdateMoneyUI();
-                    break; 
+                    break;
                 }
             }
 
@@ -104,7 +104,7 @@ public class MoneyManager : MonoBehaviour
 
     IEnumerator delaySpawnCash(int newMoney)
     {
-        for(int i=0; i< newMoney; i++)
+        for (int i = 0; i < newMoney; i++)
         {
             SpawnCash(cashes.Count);
             yield return new WaitForSeconds(0.2f);
@@ -124,7 +124,7 @@ public class MoneyManager : MonoBehaviour
         Vector3 targetPos = moneySpawnPos.position;
         Vector3 spawnPos = new Vector3(
             targetPos.x - col * spacing + 1f,
-            targetPos.y + floor *  0.1f,
+            targetPos.y + floor * 0.1f,
             targetPos.z - row * 0.9f);
 
         Vector3 firstPos = new Vector3(0.1f, 1.2f, 1.4f);
@@ -141,7 +141,7 @@ public class MoneyManager : MonoBehaviour
         Vector3 startPos = cash.transform.position;
         float elapsedTime = 0f;
         float duration = 0.5f;
-        while(elapsedTime < duration)
+        while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
             cash.transform.position = Vector3.Lerp(startPos,
@@ -149,7 +149,7 @@ public class MoneyManager : MonoBehaviour
             yield return null;
         }
         cash.transform.position = targetPos;
-        for(int i=0; i<cashes.Count; i++)
+        for (int i = 0; i < cashes.Count; i++)
         {
             if (cashes[i].Key == cash)
             {
@@ -167,6 +167,12 @@ public class MoneyManager : MonoBehaviour
     public int getMoney()
     {
         return money;
+    }
+
+    public void ChangeMoney(int count)
+    {
+        money++;
+        UpdateMoneyUI();
     }
 
 }

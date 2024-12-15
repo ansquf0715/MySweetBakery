@@ -58,7 +58,7 @@ public class Player : MonoBehaviour
         //빵을 주는지 알도록
         EventManager.OnPlayerReceiveBreads += ReceivedBread;
         //sell box가 빵을 달라고 요청하는지
-        EventManager.OnSellBoxRequestBread += GiveBreadToSellBox;
+        EventManager.OnSellBoxRequestBread += handleGiveBreadToSellbox;
 
         audioSource = GetComponent<AudioSource>();
 
@@ -150,15 +150,27 @@ public class Player : MonoBehaviour
     {
         Vector3 startPos = bread.transform.position;
         Vector3 endPos = breadSlot.position + new Vector3(0, breadHeight * breads.Count, 0);
+        Vector3 midPos = (startPos + endPos) / 2 + new Vector3(0, 1, 0);  // midPos 추가
 
         float duration = 0.1f;
+        float halfDuration = duration / 2;
         float elapsed = 0f;
 
-        while (elapsed < duration)
+        // startPos에서 midPos까지 이동
+        while (elapsed < halfDuration)
         {
             elapsed += Time.deltaTime;
-            bread.transform.position
-                = Vector3.Lerp(startPos, endPos, elapsed / duration);
+            bread.transform.position = Vector3.Lerp(startPos, midPos, elapsed / halfDuration);
+            yield return null;
+        }
+
+        elapsed = 0; // 타이머 리셋
+
+        // midPos에서 endPos까지 이동
+        while (elapsed < halfDuration)
+        {
+            elapsed += Time.deltaTime;
+            bread.transform.position = Vector3.Lerp(midPos, endPos, elapsed / halfDuration);
             yield return null;
         }
 
@@ -170,6 +182,7 @@ public class Player : MonoBehaviour
         if (breads.Count >= maxBreadCount)
             ShowMaxText();
     }
+
 
     void ShowMaxText()
     {
@@ -190,21 +203,27 @@ public class Player : MonoBehaviour
         maxText.gameObject.SetActive(false);
     }
 
-    void GiveBreadToSellBox()
+    void handleGiveBreadToSellbox()
     {
-        if(breads.Count > 0)
+        StartCoroutine(GiveBreadToSellBox());
+    }
+
+    IEnumerator GiveBreadToSellBox()
+    {
+        if (breads.Count > 0)
         {
-            GameObject bread = breads[breads.Count-1];
+            GameObject bread = breads[breads.Count - 1];
             breads.RemoveAt(breads.Count - 1);
 
             EventManager.PlayerGiveBreadToSellBox(bread);
+            yield return new WaitForSeconds(0.2f);
 
-            if(breads.Count < maxBreadCount)
+            if (breads.Count < maxBreadCount)
                 HideMaxText();
         }
         else
         {
-            return;
+            yield break; 
         }
     }
 }

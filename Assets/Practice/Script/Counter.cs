@@ -65,11 +65,14 @@ public class Counter : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Player"))
         {
-            if (cashingCustomer.isCashingState() && !alreadyCashedCustomer
-                && playerIsCashing && customerReadyToCash)
+            if(cashingCustomer != null)
             {
-                checkingOut();
-                alreadyCashedCustomer = true;
+                if (cashingCustomer.isCashingState() && !alreadyCashedCustomer
+                && playerIsCashing && customerReadyToCash)
+                {
+                    checkingOut();
+                    alreadyCashedCustomer = true;
+                }
             }
         }
     }

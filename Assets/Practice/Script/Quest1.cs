@@ -54,7 +54,6 @@ public class Quest1 : MonoBehaviour
         moneyManager = FindObjectOfType<MoneyManager>();
 
         wallSpawnPos = transform.Find("newWallSpawnPos");
-        //Debug.Log("wall spawn pos" + wallSpawnPos.position);
 
         for(int i=0; i<4; i++)
         {
@@ -63,7 +62,7 @@ public class Quest1 : MonoBehaviour
         currentFloor = transform.Find("Quest1Floor").gameObject;
 
         moneyText = transform.Find("Quest1Floor/Canvas/moneyUI").GetComponent<TextMeshProUGUI>();
-
+        moneyText.text = 35.ToString();
         initialRequiredMoney = quest.requiredMoney;
     }
 
@@ -98,7 +97,7 @@ public class Quest1 : MonoBehaviour
     {
         if(other.gameObject.CompareTag("Player"))
         {
-            if(isPaying)
+            if(isPaying && !alreadyCreated)
             {
                 StartCoroutine(PayForQuest());
             }
@@ -106,7 +105,6 @@ public class Quest1 : MonoBehaviour
             if(!isCleaning && haveDirtyTable && seat.isDirty)
             {
                 isCleaning = true;
-                //EventManager.SeatCleaned(seat);
                 StartCoroutine(CleanSeat());
             }
         }
@@ -148,13 +146,16 @@ public class Quest1 : MonoBehaviour
             }
         }
 
-        float amountPaid = initialRequiredMoney - paidAmount;
-        if(amountPaid == 0)
+        if(!alreadyCreated)
         {
-            alreadyCreated = true;
-            ChangeObjects();
+            float amountPaid = initialRequiredMoney - paidAmount;
+            if (amountPaid == 0)
+            {
+                alreadyCreated = true;
+                ChangeObjects();
+            }
+            isPaying = false;
         }
-        isPaying = false; 
     }
     void UpdateMoneyUI()
     {
@@ -170,6 +171,8 @@ public class Quest1 : MonoBehaviour
 
     void ChangeObjects()
     {
+        Debug.Log("Change objects");
+
         EventManager.OnArrowAction(4);
 
 
@@ -256,5 +259,7 @@ public class Quest1 : MonoBehaviour
         isCleaning = false;
 
         Destroy(particle.gameObject, 1f);
+        EventManager.SeatCleaned(seat);
+
     }
 }

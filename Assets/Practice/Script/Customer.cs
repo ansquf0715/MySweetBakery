@@ -6,12 +6,6 @@ using TMPro;
 using System.Diagnostics.Contracts;
 using UnityEngine.UI;
 
-//public enum CustomerState
-//{
-//    LeaveStore,
-//    RequestSeat,
-//};
-
 public class Customer : MonoBehaviour
 {
     public NavMeshAgent agent {  get; private set; }
@@ -21,6 +15,7 @@ public class Customer : MonoBehaviour
     public CustomerManager manager { get; private set; }
 
     bool sitting = false;
+    public bool eating = false;
     public bool willRequestSeat = false;
 
     public IdleState idleState;
@@ -42,7 +37,6 @@ public class Customer : MonoBehaviour
     public Image orderObj;
     public TMP_Text orderCount;
 
-    Sprite seatSprite;
 
     // Start is called before the first frame update
     void Start()
@@ -70,10 +64,7 @@ public class Customer : MonoBehaviour
         canvas = GetComponentInChildren<Canvas>();
 
         orderObj = canvas.transform.Find("OrderObj").GetComponent<Image>();  
-        orderObj.sprite = seatSprite;
-
         orderCount = canvas.transform.Find("OrderCount").gameObject.GetComponent<TMP_Text>();
-
         canvas.gameObject.SetActive(false);
 
         Debug.Log("will request seat" + willRequestSeat);
@@ -109,7 +100,7 @@ public class Customer : MonoBehaviour
 
     void UpdateAnimation()
     {
-        if (sitting)
+        if (eating)
         {
             animator.SetInteger("State", 4);
         }
@@ -141,12 +132,13 @@ public class Customer : MonoBehaviour
         }
     }
 
-    //public void HasReached(bool hasReached)
-    //{
-    //    //return hasReached;
-    //    if (currentState == checkOutState)
-    //        checkOutState.isAtCounter = hasReached;
-    //}
+    public void seatUpdateDestination(Vector3 newPos)
+    {
+        if(currentState == requestSeatState)
+        {
+            requestSeatState.UpdateDestination(newPos);
+        }
+    }
 
     public bool isCashingState()
     {
@@ -170,11 +162,6 @@ public class Customer : MonoBehaviour
         currentBreadCount++;
     }
 
-    //public int GetBreadsCount()
-    //{
-    //    return breads.Count;
-    //}
-
     public List<GameObject> GetBreads()
     {
         return breads;
@@ -189,26 +176,20 @@ public class Customer : MonoBehaviour
         }
     }
 
-    public Vector3 GetBreadStackPoint()
-    {
-        return transform.Find("BreadStackPoint").position;
-    }
-
-    //public void SetCustomerCheckOutEnd()
+    //public void moveToFirstWaitingSeatPos(Vector3 targetPos)
     //{
-    //    checkOutState.checkOutEnded = true;
-    //    //Debug.Log("CheckOutState. checkoutended" +  checkOutState.checkOutEnded);
+    //    Debug.Log("Customer Move to target pos");
+    //    requestSeatState.moveToFirstPos(targetPos);
     //}
 
-    public void moveToFirstWaitingSeatPos(Vector3 targetPos)
-    {
-        Debug.Log("Customer Move to target pos");
-        requestSeatState.moveToFirstPos(targetPos);
-    }
+    //public void moveToWaitingPos(Vector3 targetPos)
+    //{
+    //    requestSeatState.moveToWaitingPos(targetPos);
+    //}
 
-    public void moveToWaitingPos(Vector3 targetPos)
+    public bool GetSitting()
     {
-        requestSeatState.moveToWaitingPos(targetPos);
+        return sitting;
     }
 
     public void SetSitting(bool isSitting)
@@ -225,5 +206,10 @@ public class Customer : MonoBehaviour
             Destroy(bread);
         }
         breads.Clear();
+    }
+
+    public void DestroySelf()
+    {
+        Destroy(this.gameObject);
     }
 }

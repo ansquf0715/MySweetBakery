@@ -10,7 +10,7 @@ public class Oven : MonoBehaviour
     Collider basketCol;
 
     public ParticleSystem bakeParticlePrefab;
-    ParticleSystem bakeParticle;
+    //ParticleSystem bakeParticle;
 
     [SerializeField]
     int maxBreadCount = 10;
@@ -59,17 +59,17 @@ public class Oven : MonoBehaviour
 
     void Bake()
     {
-        bakeParticle = Instantiate(bakeParticlePrefab, new Vector3(5f, 2f, -5f), Quaternion.identity);
+        ParticleSystem bakeParticle = Instantiate(bakeParticlePrefab, new Vector3(5f, 2f, -5f), Quaternion.identity);
         bakeParticle.time = 5f;
         bakeParticle.Play();
 
         GameObject bread = Instantiate(breadPrefab,
             breadSpawnPos, Quaternion.identity);
         //currentBreadCount++;
-        StartCoroutine(MoveBreadToBasket(bread));
+        StartCoroutine(MoveBreadToBasket(bread, bakeParticle));
     }
 
-    IEnumerator MoveBreadToBasket(GameObject bread)
+    IEnumerator MoveBreadToBasket(GameObject bread, ParticleSystem bake)
     {
         float targetX = basket.position.x;
         Vector3 currentPos = bread.transform.position;
@@ -91,6 +91,7 @@ public class Oven : MonoBehaviour
         {
             breads.Add(bread);
             currentBreadCount++;
+            Destroy(bake);
         }
     }
 
