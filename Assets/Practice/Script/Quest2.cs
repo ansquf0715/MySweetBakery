@@ -28,7 +28,6 @@ public class Quest2 : MonoBehaviour
     {
         moneyManager = FindObjectOfType<MoneyManager>();
 
-        //moneyText = transform.Find("Quest2/Canvas/moneyText").GetComponent<TextMeshProUGUI>();
         initialRequiredMoney = quest.requiredMoney;
     }
 

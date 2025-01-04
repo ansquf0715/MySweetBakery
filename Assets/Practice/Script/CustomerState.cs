@@ -74,6 +74,7 @@ public class GetBreadState : ICustomerState
         customer.orderCount.gameObject.SetActive(false);
         manager.LeavingBreadPos(customer);
         sellBox.customerRemove(customer);
+        //sellBox.customerRemove();
     }
 
     void decideRequestBread()
@@ -132,7 +133,7 @@ public class GetBreadState : ICustomerState
         while(currentBreadCount != requestBreadCount)
         {
             GameObject bread = sellBox.CustomerRequestBread(customer);
-            if(bread != null)
+            if (bread != null)
             {
                 yield return customer.StartCoroutine(moveBreads(bread));
             }
@@ -271,20 +272,6 @@ public class CheckOutState : ICustomerState
             && agent.remainingDistance <= 0.5f && !agent.pathPending);
 
         customer.StartCoroutine(SmoothRotateTowards());
-
-        //if (customer.willRequestSeat)
-        //{
-        //    Debug.Log("state가 바뀌긴 하나?");
-        //    agent.isStopped = false;
-        //    customer.ChangeState(customer.requestSeatState);
-        //    yield break;
-        //}
-        //else
-        //{
-        //    Debug.Log("이거 혹시 같이 실행되니?");
-        //    customer.StartCoroutine(SmoothRotateTowards());
-        //    yield break;
-        //}
     }
 
     void SetUI()
@@ -431,12 +418,9 @@ public class RequestSeatState : ICustomerState
     CustomerManager manager;
 
     Sprite seatSprite;
-    bool isCheckingSeat = false;
 
     GameObject trashPrefab;
     GameObject trash;
-
-    bool isAtWaitingPos = false;
 
     public RequestSeatState(Customer customer)
     {
@@ -450,7 +434,6 @@ public class RequestSeatState : ICustomerState
 
     public void Enter()
     {
-        Debug.Log("Seat Enter");
         Vector3 initialPos = new Vector3(-2.5f, 0.5f, 4.5f);
         agent.SetDestination(initialPos);
         agent.isStopped = false;

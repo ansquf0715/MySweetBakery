@@ -8,7 +8,6 @@ public class Counter : MonoBehaviour
     public AudioClip cashSound;
     AudioSource audioSource;
 
-    //Queue<Customer> waitingCustomers = new Queue<Customer>();
     Customer cashingCustomer;
     bool playerIsCashing = false;
     bool alreadyCashedCustomer = false;
@@ -22,27 +21,16 @@ public class Counter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //EventManager.OnCustomerAtCounter += addCustomer;
-
         boxCol = GetComponent<BoxCollider>();
         circleCol = GetComponent<SphereCollider>();
 
         audioSource = GetComponent<AudioSource>();
-
-        //EventManager.OnNextCustomerArrivedAtCounterPosition += handleCustomerArrival;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //if(playerIsCashing && cashingCustomer != null && !alreadyCashedCustomer)
-        //{
-        //    if(cashingCustomer.isCashingState())
-        //    {
-        //        checkingOut();
-        //        alreadyCashedCustomer=true;
-        //    }
-        //}
+
     }
 
     private void OnTriggerEnter(Collider other)
@@ -50,8 +38,7 @@ public class Counter : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             EventManager.OnArrowAction(3);
-            //playerIsCashing = true;
-            //StartCoroutine(delayCashing());
+
             StartCoroutine(DelayCashing("player"));
         }
         else if(other.gameObject.CompareTag("Customer"))
@@ -151,7 +138,9 @@ public class Counter : MonoBehaviour
 
             cashingCustomer.RemoveBread(bread);
 
-            Destroy(bread);
+            //Destroy(bread);
+
+            EventManager.OnReturnBreads(bread);
         }
 
         Animator bagAnim = bag.GetComponent<Animator>();
@@ -165,7 +154,6 @@ public class Counter : MonoBehaviour
     IEnumerator delayCheckingOut()
     {
         yield return new WaitForSeconds(1f);
-        //cashingCustomer.SetCustomerCheckOutEnd();
         bag = null;
         cashingCustomer = null;
         alreadyCashedCustomer = false;

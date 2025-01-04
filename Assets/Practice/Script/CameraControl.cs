@@ -5,7 +5,6 @@ using UnityEngine;
 public class CameraControl : MonoBehaviour
 {
     public Transform player;
-    //Vector3 PlayerfollowOffset = new Vector3(7.5f, 7f, 0);
     Vector3 PlayerfollowOffset = new Vector3(6.5f, 7.9f, 0);
     Vector3 followOffset = new Vector3(10, 7.5f, 0);
     public float smoothSpeed = 0.125f;
@@ -18,7 +17,6 @@ public class CameraControl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //EventManager.OnQuestIsAvailable += handleQuestAvailable;
     }
 
     // Update is called once per frame

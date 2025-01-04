@@ -40,31 +40,26 @@ public class CustomerManager : MonoBehaviour
     public Transform customerSpawnPos;
     public Transform customerBreadPos;
     public Transform customerCounterPos;
-    //public Transform customerSeatWaitingPos;
     Vector3 customerSeatWaitingPos = new Vector3(-2f, 0.5f, 5f);
 
     List<Transform> breadStandPositions = new List<Transform>();
     List<KeyValuePair<Customer, bool>> breadStandUsed = new List<KeyValuePair<Customer, bool>>();
 
-    float counterSpacing = 1.5f;
+    //float counterSpacing = 1.5f;
     Queue<Customer> customerWaitingOrder=  new Queue<Customer>();
 
-    //seat을 원하는 customer
     List<Seat> seats = new List<Seat>();
     Queue<Customer> seatWaitingQueue = new Queue<Customer>();
 
     int createdCustomers = 0;
-    //List<Customer> allCustomers = new List<Customer>();
     public int cashedCustomer = 0;
-
-    bool isUpdatingSeats = false;
 
     readonly object positionLock = new object();
 
     // Start is called before the first frame update
     void Start()
     {
-        EventManager.FirstQuestIsReady();
+        //EventManager.FirstQuestIsReady();
 
         EventManager.OnNewSeatAvailable += handleNewSeat;
         EventManager.OnSeatCleaned += handleCleanedSeat;
@@ -95,7 +90,6 @@ public class CustomerManager : MonoBehaviour
             }
             GameObject newCustomer = Instantiate(customerPrefab, customerSpawnPos.position, Quaternion.identity);
             Customer customerComp = newCustomer.GetComponent<Customer>();
-            //allCustomers.Add(customerComp);
 
             createdCustomers++;
 
@@ -189,7 +183,6 @@ public class CustomerManager : MonoBehaviour
         }
         if (found)
         {
-            Debug.Log("찾았다!!!!!!!");
             moveRestWaitingCounterCustomers();
         }
     }
@@ -236,32 +229,18 @@ public class CustomerManager : MonoBehaviour
                 {
                     seat.isUsed = true;
 
-                    Debug.Log("assign seat to customer");
                     Customer assignedCustomer = seatWaitingQueue.Peek();
                     assignedCustomer.SetSitting(true);
                     assignedCustomer.seatUpdateDestination(seat.seatPos);
 
                     seat.assignedCustomer = assignedCustomer;
                     seatWaitingQueue.Dequeue();
-                    //UpdateWaitingSeatPositions();
                     UpdateCustomerSeatWaitingPos();
                     break;
                 }
             }
         }
     }
-
-    //void UpdateWaitingSeatPositions()
-    //{
-    //    int i = 0;
-    //    foreach(Customer customer in seatWaitingQueue)
-    //    {
-    //        Vector3 newPos = customerSeatWaitingPos - new Vector3(1.2f * i, 0, 0);
-    //        customer.UpdateDestination(newPos);
-    //        //UpdateCustomerSeatWaitingPos();
-    //        i++;
-    //    }
-    //}
 
     public void destroyCustomer(Customer customer)
     {

@@ -141,7 +141,6 @@ public class PlayerArrow : MonoBehaviour
                         }
 
                         arrowInstance.transform.position = newPos;
-                        //UpdateCanvasRotation();
                         StartCoroutine(AnimateArrowUntilComplete(nowAvailableArrows));
                     }
 

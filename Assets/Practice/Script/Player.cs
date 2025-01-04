@@ -16,15 +16,13 @@ public class Player : MonoBehaviour
 
     bool isNearOven = false;
     bool isRequestingBread = false;
-    //bool hasRequestedBread = false;
 
     int maxBreadCount = 8;
-    int currentBreadCount = 0;
+    //int currentBreadCount = 0;
     public List<GameObject> breads = new List<GameObject>();
 
     Transform breadSlot;
     float breadHeight = 0.2f;
-    float currentTopHeight = 0f;
 
     Vector3 destination;
 
@@ -53,16 +51,11 @@ public class Player : MonoBehaviour
 
         maxText.gameObject.SetActive(false);
 
-        //오븐 근처에 왔는지 전달받도록
         EventManager.OnPlayerNearOven += UpdateTriggerStatus;
-        //빵을 주는지 알도록
         EventManager.OnPlayerReceiveBreads += ReceivedBread;
-        //sell box가 빵을 달라고 요청하는지
         EventManager.OnSellBoxRequestBread += handleGiveBreadToSellbox;
 
         audioSource = GetComponent<AudioSource>();
-
-        //arrowIsAvailable = FindObjectOfType<PlayerArrow>().arrowIsAvailable;
     }
 
 
@@ -71,7 +64,6 @@ public class Player : MonoBehaviour
     void Update()
     {
         UpdateAnimation();
-        //checkArrowAvailable();
     }
 
 
@@ -150,13 +142,12 @@ public class Player : MonoBehaviour
     {
         Vector3 startPos = bread.transform.position;
         Vector3 endPos = breadSlot.position + new Vector3(0, breadHeight * breads.Count, 0);
-        Vector3 midPos = (startPos + endPos) / 2 + new Vector3(0, 1, 0);  // midPos 추가
+        Vector3 midPos = (startPos + endPos) / 2 + new Vector3(0, 1, 0); 
 
         float duration = 0.1f;
         float halfDuration = duration / 2;
         float elapsed = 0f;
 
-        // startPos에서 midPos까지 이동
         while (elapsed < halfDuration)
         {
             elapsed += Time.deltaTime;
@@ -164,9 +155,8 @@ public class Player : MonoBehaviour
             yield return null;
         }
 
-        elapsed = 0; // 타이머 리셋
+        elapsed = 0;
 
-        // midPos에서 endPos까지 이동
         while (elapsed < halfDuration)
         {
             elapsed += Time.deltaTime;
@@ -190,7 +180,6 @@ public class Player : MonoBehaviour
         {
             maxText.gameObject.SetActive(true);
 
-            // 플레이어의 월드 좌표를 화면 좌표로 변환
             Vector3 screenPosition = Camera.main.WorldToScreenPoint(breadSlot.position + new Vector3(0, (breadHeight * breads.Count + 1), 0));
 
             RectTransform rectTransform = maxText.GetComponent<RectTransform>();

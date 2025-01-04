@@ -50,7 +50,7 @@ public class SeatMoney : MonoBehaviour
 
     IEnumerator RemoveCash()
     {
-        while (true) // 조건은 적절히 조정
+        while (true)
         {
             for (int i = cashesFromSeat.Count - 1; i >= 0; i--)
             {
@@ -99,7 +99,6 @@ public class SeatMoney : MonoBehaviour
 
     IEnumerator MoveToPosition(GameObject cash, Vector3 targetPos)
     {
-        //Vector3 startPos = new Vector3(0.1f, 1.4f, 1.2f);
         Vector3 startPos = cash.transform.position;
         float elapsedTime = 0f;
         float duration = 0.5f;

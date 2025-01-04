@@ -171,8 +171,6 @@ public class Quest1 : MonoBehaviour
 
     void ChangeObjects()
     {
-        Debug.Log("Change objects");
-
         EventManager.OnArrowAction(4);
 
 

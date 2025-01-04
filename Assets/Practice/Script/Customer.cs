@@ -45,8 +45,6 @@ public class Customer : MonoBehaviour
         animator = GetComponent<Animator>();
 
         manager = FindObjectOfType<CustomerManager>();
-        //eventManager = FindObjectOfType<EventManager>();
-        //sitting = false;
 
         idleState = new IdleState(this);
         getBreadState = new GetBreadState(this);
@@ -58,16 +56,12 @@ public class Customer : MonoBehaviour
 
         bag = null;
 
-        //seatSprite = Resources.Load<Sprite>("TableChair");
-
         cam = Camera.main;
         canvas = GetComponentInChildren<Canvas>();
 
         orderObj = canvas.transform.Find("OrderObj").GetComponent<Image>();  
         orderCount = canvas.transform.Find("OrderCount").gameObject.GetComponent<TMP_Text>();
         canvas.gameObject.SetActive(false);
-
-        Debug.Log("will request seat" + willRequestSeat);
     }
 
     // Update is called once per frame
@@ -76,7 +70,6 @@ public class Customer : MonoBehaviour
         if(stateChanged)
         {
             currentState.Execute();
-            //stateChanged = false;
         }
         UpdateAnimation();
 
@@ -176,17 +169,6 @@ public class Customer : MonoBehaviour
         }
     }
 
-    //public void moveToFirstWaitingSeatPos(Vector3 targetPos)
-    //{
-    //    Debug.Log("Customer Move to target pos");
-    //    requestSeatState.moveToFirstPos(targetPos);
-    //}
-
-    //public void moveToWaitingPos(Vector3 targetPos)
-    //{
-    //    requestSeatState.moveToWaitingPos(targetPos);
-    //}
-
     public bool GetSitting()
     {
         return sitting;
@@ -203,7 +185,8 @@ public class Customer : MonoBehaviour
         {
             GameObject bread = breads[i];
             breads.RemoveAt(i);
-            Destroy(bread);
+            //Destroy(bread);
+            EventManager.OnReturnBreads(bread);
         }
         breads.Clear();
     }

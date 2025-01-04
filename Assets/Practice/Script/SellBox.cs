@@ -10,19 +10,16 @@ public class SellBox : MonoBehaviour
 
     Transform breadSlot;
     Vector3 breadSpacing = new Vector3(0.5f, 0f, 0f);
-    float breadHeightOffset = 0.5f;
 
     int maxBreadCount = 12;
     int currentBreadCount = 0;
 
     bool nearPlayer = false;
-    bool isProcessingCustomer = false;
+    //bool isProcessingCustomer = false;
     List<Customer> enteredCustomer = new List<Customer>();
 
     AudioSource audioSource;
     public AudioClip putBreadSound;
-
-    bool customerIsRequesting = false;
 
     // Start is called before the first frame update
     void Start()
@@ -43,7 +40,7 @@ public class SellBox : MonoBehaviour
 
     public GameObject CustomerRequestBread(Customer customer)
     {
-        if (enteredCustomer.Contains(customer)) 
+        if (enteredCustomer.Contains(customer))
         {
             for (int i = breads.Count - 1; i >= 0; i--)
             {
@@ -58,7 +55,7 @@ public class SellBox : MonoBehaviour
                 }
             }
         }
-        return null; 
+        return null;
     }
 
     IEnumerator RequestBreadCoroutine()
@@ -72,7 +69,7 @@ public class SellBox : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             EventManager.OnArrowAction(2);
             nearPlayer = true;
@@ -86,7 +83,7 @@ public class SellBox : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if(other.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             nearPlayer = false;
         }
@@ -105,7 +102,7 @@ public class SellBox : MonoBehaviour
         audioSource.loop = true;
         audioSource.Play();
 
-        StartCoroutine(MoveBreadToSlot(receivedBread, breads.Count-1));
+        StartCoroutine(MoveBreadToSlot(receivedBread, breads.Count - 1));
     }
 
     IEnumerator MoveBreadToSlot(GameObject bread, int index)
@@ -151,45 +148,11 @@ public class SellBox : MonoBehaviour
     }
 
 
-    //IEnumerator MoveBreadToSlot(GameObject bread, int index)
-    //{
-    //    Vector3 startPos = bread.transform.position;
-
-    //    int maxPerRow = 4;
-    //    float breadWidth = 0.5f;
-    //    float breadHeight = 0.5f;
-
-    //    int row = (currentBreadCount - 1) % maxPerRow;
-    //    int floor = (currentBreadCount - 1) / maxPerRow;
-
-    //    Vector3 targetPos = breadSlot.position
-    //    + new Vector3(row * breadWidth, 
-    //                  floor * breadHeight, 
-    //                  0);
-    //    float elapsedTime = 0f;
-    //    float moveDuration = 0.5f;
-
-    //    while (elapsedTime < moveDuration)
-    //    {
-    //        bread.transform.position = Vector3.Lerp(startPos, targetPos, (elapsedTime / moveDuration));
-    //        elapsedTime += Time.deltaTime;
-    //        yield return null;
-    //    }
-
-    //    bread.transform.position = targetPos;
-    //    bread.transform.rotation = Quaternion.Euler(0, 0, 0);
-    //    bread.transform.SetParent(breadSlot);
-
-    //    breadReady[index] = true;
-
-    //    audioSource.Stop();
-    //}
-
     public void customerRemove(Customer customer)
     {
-        for(int i=0; i<enteredCustomer.Count; i++)
+        for (int i = 0; i < enteredCustomer.Count; i++)
         {
-            if(enteredCustomer[i] == customer)
+            if (enteredCustomer[i] == customer)
             {
                 enteredCustomer.RemoveAt(i);
             }

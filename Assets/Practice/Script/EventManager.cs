@@ -25,6 +25,8 @@ public class EventManager : MonoBehaviour
 
     public static Action<int> OnArrowAction; //화살표 위치를 지정하기 위해
 
+    public static Action<GameObject> OnReturnBreads; //빵을 destroy하기 전에 pool에 반납
+
     public static void SetPlayerNearOven(bool isNear)
     {
         OnPlayerNearOven?.Invoke(isNear);
@@ -88,5 +90,10 @@ public class EventManager : MonoBehaviour
     public static void ArrowAction(int arrowId)
     {
         OnArrowAction?.Invoke(arrowId);
+    }
+
+    public static void ReturnBreads(GameObject bread)
+    {
+        OnReturnBreads?.Invoke(bread);
     }
 }

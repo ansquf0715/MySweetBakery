@@ -21,7 +21,6 @@ public class MoneyManager : MonoBehaviour
     public TextMeshProUGUI moneyText;
 
     bool playerIsGettingCash = false;
-    bool makeEventToQuest = false;
 
     // Start is called before the first frame update
     void Start()
@@ -88,7 +87,6 @@ public class MoneyManager : MonoBehaviour
 
             if (cashes.Count == 0)
             {
-                //Debug.Log("더 이상 삭제할 cash가 없습니다.");
                 break;
             }
             yield return new WaitForSeconds(0.1f);
@@ -99,7 +97,6 @@ public class MoneyManager : MonoBehaviour
     {
         int newMoney = count * billForBread;
         StartCoroutine(delaySpawnCash(newMoney));
-        //money += newMoney;
     }
 
     IEnumerator delaySpawnCash(int newMoney)
@@ -137,7 +134,6 @@ public class MoneyManager : MonoBehaviour
 
     IEnumerator MoveToPosition(GameObject cash, Vector3 targetPos)
     {
-        //Vector3 startPos = new Vector3(0.1f, 1.4f, 1.2f);
         Vector3 startPos = cash.transform.position;
         float elapsedTime = 0f;
         float duration = 0.5f;
