@@ -19,7 +19,7 @@ public class Oven : MonoBehaviour
     float moveSpeed = 2f;
 
     Vector3 breadSpawnPos = new Vector3(4f, 1.8f, -5f);
-    List<GameObject> breads = new List<GameObject>();
+    public List<GameObject> breads = new List<GameObject>();
 
     int initialPoolSize = 10;
     Queue<GameObject> breadPool = new Queue<GameObject>();
@@ -70,7 +70,6 @@ public class Oven : MonoBehaviour
 
     public void ReturnBreadToPool(GameObject bread)
     {
-        //여기는 event 발생으로 수정하도록
         bread.SetActive(false);
         breadPool.Enqueue(bread);
     }
@@ -102,7 +101,10 @@ public class Oven : MonoBehaviour
         //    breadSpawnPos, Quaternion.identity);
         //StartCoroutine(MoveBreadToBasket(bread, bakeParticle));
 
+        Debug.Log("Bake");
         GameObject bread = GetBreadFromPool();
+        if (bread == null)
+            Debug.Log("bread is null");
         bread.transform.position = breadSpawnPos;
         StartCoroutine(MoveBreadToBasket(bread, bakeParticle));
     }

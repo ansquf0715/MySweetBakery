@@ -438,6 +438,7 @@ public class RequestSeatState : ICustomerState
         agent.SetDestination(initialPos);
         agent.isStopped = false;
         customer.StartCoroutine(WaitUntilArriveInitialPos());
+        manager.checkSeatCustomerIsAtCounter(customer);
         SetUI();
     }
     public void Execute()
@@ -452,12 +453,12 @@ public class RequestSeatState : ICustomerState
     {
         customer.orderObj.sprite = seatSprite;
 
-        Vector3 currentPos = customer.orderObj.rectTransform.localPosition;
-        customer.orderObj.rectTransform.localPosition = new Vector3(
-            currentPos.x - 0.2f, currentPos.y, currentPos.z);
+        //Vector3 currentPos = customer.orderObj.rectTransform.localPosition;
+        //customer.orderObj.rectTransform.localPosition = new Vector3(
+        //    currentPos.x - 0.2f, currentPos.y, currentPos.z);
 
-        customer.orderObj.rectTransform.localScale = new Vector3(
-            1.4f, 1.4f, 1.4f);
+        //customer.orderObj.rectTransform.localScale = new Vector3(
+        //    1.4f, 1.4f, 1.4f);
     }
 
     IEnumerator WaitUntilArriveInitialPos()
