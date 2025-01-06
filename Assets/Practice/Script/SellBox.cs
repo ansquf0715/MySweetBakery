@@ -71,6 +71,7 @@ public class SellBox : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
+            Debug.Log("trigger enter");
             EventManager.OnArrowAction(2);
             nearPlayer = true;
         }

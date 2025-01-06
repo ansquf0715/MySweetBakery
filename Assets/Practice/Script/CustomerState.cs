@@ -317,31 +317,75 @@ public class CheckOutState : ICustomerState
 
     IEnumerator moveBagToCustomer(GameObject bag)
     {
-        Vector3 bagStartPos = bag.transform.position;
+        Vector3 startPos = bag.transform.position;
+        Transform breadStackPoint = customer.gameObject.transform.Find("BreadStackPoint");
 
-        Transform breadStackPoint
-            = customer.gameObject.transform.Find("BreadStackPoint");
-
-        bag.transform.SetParent(breadStackPoint);
-        bag.transform.localPosition = Vector3.zero;
-        bag.transform.rotation = Quaternion.Euler(0, 90f, 0);
+        Vector3 midPos = new Vector3(
+            (startPos.x + breadStackPoint.position.x) / 2,
+            breadStackPoint.position.y + 2,
+            (startPos.z + breadStackPoint.position.z) / 2);
 
         float elapsedTime = 0f;
-        float durationTime = 1f;
+        float duration = 0.5f;
+        float halfDuration = duration / 2f;
 
-        while (elapsedTime < durationTime)
+        while(elapsedTime < halfDuration)
         {
-            bag.transform.position = Vector3.Lerp(bagStartPos, breadStackPoint.position, (elapsedTime / durationTime));
+            float t = elapsedTime / halfDuration;
+            bag.transform.position = Vector3.Lerp(startPos, midPos, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        elapsedTime = 0f;
+
+        while(elapsedTime < halfDuration)
+        {
+            float t = elapsedTime / halfDuration;
+            bag.transform.position = Vector3.Lerp(midPos, breadStackPoint.position, t);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
         bag.transform.position = breadStackPoint.position;
+
+        bag.transform.SetParent(breadStackPoint);
+        bag.transform.localPosition = Vector3.zero;
+        bag.transform.rotation = Quaternion.Euler(0, 90f, 0);
+
         disableUI();
         yield return new WaitForSeconds(0.5f);
         EventManager.CustomerPay(customer, customer.requestBreadCount);
         customer.ChangeState(customer.leaveStoreState);
     }
+
+    //IEnumerator moveBagToCustomer(GameObject bag)
+    //{
+    //    Vector3 bagStartPos = bag.transform.position;
+
+    //    Transform breadStackPoint
+    //        = customer.gameObject.transform.Find("BreadStackPoint");
+
+    //    bag.transform.SetParent(breadStackPoint);
+    //    bag.transform.localPosition = Vector3.zero;
+    //    bag.transform.rotation = Quaternion.Euler(0, 90f, 0);
+
+    //    float elapsedTime = 0f;
+    //    float durationTime = 1f;
+
+    //    while (elapsedTime < durationTime)
+    //    {
+    //        bag.transform.position = Vector3.Lerp(bagStartPos, breadStackPoint.position, (elapsedTime / durationTime));
+    //        elapsedTime += Time.deltaTime;
+    //        yield return null;
+    //    }
+
+    //    bag.transform.position = breadStackPoint.position;
+    //    disableUI();
+    //    yield return new WaitForSeconds(0.5f);
+    //    EventManager.CustomerPay(customer, customer.requestBreadCount);
+    //    customer.ChangeState(customer.leaveStoreState);
+    //}
 
 }
 
@@ -550,7 +594,7 @@ public class RequestSeatState : ICustomerState
 
     IEnumerator MoveBreadsToTable()
     {
-        Vector3 destPos = new Vector3(-5.4f, 1.5f, 7.7f);
+        Vector3 destPos = new Vector3(-5.4f, 1.6f, 7.7f);
         float yOffset = 0.3f;
 
         for(int i=customer.breads.Count-1; i>=0; i--)

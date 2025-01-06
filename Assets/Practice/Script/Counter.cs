@@ -97,9 +97,9 @@ public class Counter : MonoBehaviour
         List<GameObject> breads = cashingCustomer.GetBreads();
 
         bag = Instantiate(bagPrefab,
-            new Vector3(0, 1.4f, 1.6f), Quaternion.identity);
-        Animator bagAnim = bag.GetComponent<Animator>();
-        bagAnim.SetBool("isOpen", true);
+            new Vector3(0.18f, 1.63f, 1.92f), Quaternion.identity);
+        //Animator bagAnim = bag.GetComponent<Animator>();
+        //bagAnim.SetBool("isOpen", true);
 
         StartCoroutine(MoveBreadsToBag(breads));
     }
@@ -144,7 +144,7 @@ public class Counter : MonoBehaviour
         }
 
         Animator bagAnim = bag.GetComponent<Animator>();
-        bagAnim.SetBool("isOpen", false);
+        //bagAnim.SetBool("isOpen", false);
 
         cashingCustomer.GetBag(bag);
 

@@ -44,7 +44,7 @@ public class PlayerArrow : MonoBehaviour
         arrowList.Add(new Arrow(1, basket, 3f));
 
         GameObject sellbox = GameObject.Find("SellBasket");
-        arrowList.Add(new Arrow(2, sellbox.transform, 2f));
+        arrowList.Add(new Arrow(2, sellbox.transform, 2.6f));
 
         GameObject counter = GameObject.Find("Counter");
         arrowList.Add(new Arrow(3, counter.transform, offset));
@@ -133,6 +133,12 @@ public class PlayerArrow : MonoBehaviour
                         nowAvailableArrows = arrowList[arrowId];
                         Vector3 newPos = nowAvailableArrows.pointingObj.position;
                         newPos.y += nowAvailableArrows.offset;
+                        if(arrowId == 1)
+                        {
+                            Debug.Log("arrowID == 2");
+                            newPos.x = -4f;
+                            newPos.z = -4.75f;
+                        }
                         if (arrowId == 4)
                         {
                             newPos.x = -6.5f;
@@ -153,7 +159,8 @@ public class PlayerArrow : MonoBehaviour
     {
         Vector3 spawnPos = nowAvailableArrows.pointingObj.position;
         spawnPos.y += nowAvailableArrows.offset;
-        arrowInstance = Instantiate(arrowPrefab, spawnPos, Quaternion.Euler(0f, 90f, 0f));
+        //arrowInstance = Instantiate(arrowPrefab, spawnPos, Quaternion.Euler(0f, 90f, 0f));
+        arrowInstance = Instantiate(arrowPrefab, spawnPos, Quaternion.Euler(0f, 90f, 180f));
         StartCoroutine(AnimateArrowUntilComplete(nowAvailableArrows));
     }
 

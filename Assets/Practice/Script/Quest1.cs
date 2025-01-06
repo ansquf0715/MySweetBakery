@@ -62,6 +62,7 @@ public class Quest1 : MonoBehaviour
         currentFloor = transform.Find("Quest1Floor").gameObject;
 
         moneyText = transform.Find("Quest1Floor/Canvas/moneyUI").GetComponent<TextMeshProUGUI>();
+        Debug.Log("moneyText" + moneyText.text);
         moneyText.text = 35.ToString();
         initialRequiredMoney = quest.requiredMoney;
     }
@@ -184,16 +185,18 @@ public class Quest1 : MonoBehaviour
         }
         currentWalls.Clear();
 
-        Vector3 spawnPos = wallSpawnPos.position;
+        Vector3 spawnPos = new Vector3(-8.2f, 0.5f, 7.5f);
+        GameObject newWall = Instantiate(wallPrefab, spawnPos, Quaternion.Euler(0, 90f, 0));
+        currentWalls.Add(newWall);
 
-        for(int i=0; i<3; i++)
-        {
-            Vector3 wallPos = new Vector3(spawnPos.x,
-                0.5f, spawnPos.z + i * 1.7f);
-            GameObject newWall = Instantiate(wallPrefab,
-                wallPos, Quaternion.Euler(0, 90f, 0));
-            currentWalls.Add(newWall);
-        }
+        //for(int i=0; i<3; i++)
+        //{
+        //    Vector3 wallPos = new Vector3(spawnPos.x,
+        //        0.5f, spawnPos.z + i * 1.7f);
+        //    GameObject newWall = Instantiate(wallPrefab,
+        //        wallPos, Quaternion.Euler(0, 90f, 0));
+        //    currentWalls.Add(newWall);
+        //}
 
         Vector3 newFloorPos = currentFloor.transform.position;
         Destroy(currentFloor);
