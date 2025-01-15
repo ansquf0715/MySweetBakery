@@ -28,24 +28,24 @@ public class Oven : MonoBehaviour
     void Start()
     {
         EventManager.OnPlayerBreadRequest += GivePlayerBreads;
-        EventManager.OnReturnBreads += ReturnBreadToPool;
+        //EventManager.OnReturnBreads += ReturnBreadToPool;
 
         basket = transform.Find("Basket");
         basketCol = basket.GetComponent<Collider>();
 
-        initializeBreadPool();
+        //initializeBreadPool();
         StartCoroutine(bakeBreads());
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     void initializeBreadPool()
     {
-        for(int i=0; i<initialPoolSize; i++)
+        for (int i = 0; i < initialPoolSize; i++)
         {
             GameObject bread = Instantiate(breadPrefab);
             bread.SetActive(false);
@@ -55,7 +55,7 @@ public class Oven : MonoBehaviour
 
     GameObject GetBreadFromPool()
     {
-        if(breadPool.Count > 0)
+        if (breadPool.Count > 0)
         {
             GameObject bread = breadPool.Dequeue();
             bread.SetActive(true);
@@ -76,7 +76,7 @@ public class Oven : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             EventManager.OnArrowAction(1);
             EventManager.SetPlayerNearOven(true);
@@ -94,28 +94,31 @@ public class Oven : MonoBehaviour
     void Bake()
     {
         ParticleSystem bakeParticle = Instantiate(bakeParticlePrefab, new Vector3(5f, 2f, -5f), Quaternion.identity);
-        bakeParticle.time = 5f;
-        bakeParticle.Play();
+        //bakeParticle.time = 5f;
+        //bakeParticle.Play();
 
-        //GameObject bread = Instantiate(breadPrefab,
-        //    breadSpawnPos, Quaternion.identity);
+        GameObject bread = Instantiate(breadPrefab,
+            breadSpawnPos, Quaternion.identity);
         //StartCoroutine(MoveBreadToBasket(bread, bakeParticle));
 
-        Debug.Log("Bake");
-        GameObject bread = GetBreadFromPool();
-        if (bread == null)
-            Debug.Log("bread is null");
+        //Debug.Log("Bake");
+        //GameObject bread = GetBreadFromPool();
+        //if (bread == null)
+        //    Debug.Log("bread is null");
         bread.transform.position = breadSpawnPos;
+        //Destroy(bakeParticle);
+
         StartCoroutine(MoveBreadToBasket(bread, bakeParticle));
     }
 
     IEnumerator MoveBreadToBasket(GameObject bread, ParticleSystem bake)
     {
-        float targetX = basket.position.x;
+        Destroy(bake);
+        float targetX = basket.position.x + 0.7f;
         Vector3 currentPos = bread.transform.position;
 
         Rigidbody breadRB = bread.GetComponent<Rigidbody>();
-        breadRB.isKinematic = true;
+        //breadRB.isKinematic = true;
 
         while(Mathf.Abs(bread.transform.position.x - targetX) > 0.1f)
         {
@@ -124,8 +127,7 @@ public class Oven : MonoBehaviour
             bread.transform.position = new Vector3(newX, currentPos.y, currentPos.z);
             yield return null;
         }
-
-        breadRB.isKinematic = false;
+        //breadRB.isKinematic = false;
         yield return new WaitForSeconds(0.5f);
         if(!breads.Contains(bread))
         {
@@ -133,7 +135,6 @@ public class Oven : MonoBehaviour
             currentBreadCount++;
             Destroy(bake);
         }
-        Destroy(bake);
     }
 
     IEnumerator bakeBreads()

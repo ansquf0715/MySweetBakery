@@ -94,6 +94,7 @@ public class Counter : MonoBehaviour
 
         alreadyCashedCustomer = true;
 
+        Debug.Log("breads count");
         List<GameObject> breads = cashingCustomer.GetBreads();
 
         bag = Instantiate(bagPrefab,
@@ -116,7 +117,7 @@ public class Counter : MonoBehaviour
             Vector3 midPos = new Vector3(targetPos.x, targetPos.y + 2, targetPos.z);
 
             float elapsedTime = 0f;
-            float duration = 0.3f;
+            float duration = 0.1f;
             float halfDuration = duration / 2;
 
             while (elapsedTime < halfDuration)
@@ -136,11 +137,12 @@ public class Counter : MonoBehaviour
 
             bread.transform.position = targetPos;
 
+            yield return new WaitForSeconds(0.1f);
             cashingCustomer.RemoveBread(bread);
 
             //Destroy(bread);
 
-            EventManager.OnReturnBreads(bread);
+            //EventManager.OnReturnBreads(bread);
         }
 
         Animator bagAnim = bag.GetComponent<Animator>();

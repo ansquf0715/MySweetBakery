@@ -324,8 +324,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 100
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 79bd219617f03104ba84ef131db5eb4a, type: 2}
-  m_sharedMaterial: {fileID: -5097046333353354066, guid: 79bd219617f03104ba84ef131db5eb4a, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 93645d197f7a89d49a7144226a5b408b, type: 2}
+  m_sharedMaterial: {fileID: 3453732254348279004, guid: 93645d197f7a89d49a7144226a5b408b, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -450,6 +450,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9bb61b32444b04469a2b965bdc67756, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  paidAmount: 0
 --- !u!1 &8887612829669047619
 GameObject:
   m_ObjectHideFlags: 0

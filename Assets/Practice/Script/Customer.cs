@@ -165,6 +165,7 @@ public class Customer : MonoBehaviour
         if(breads.Contains(bread))
         {
             breads.Remove(bread);
+            Destroy(bread);
             currentBreadCount--;
         }
     }
@@ -185,8 +186,8 @@ public class Customer : MonoBehaviour
         {
             GameObject bread = breads[i];
             breads.RemoveAt(i);
-            //Destroy(bread);
-            EventManager.OnReturnBreads(bread);
+            Destroy(bread);
+            //EventManager.OnReturnBreads(bread);
         }
         breads.Clear();
     }

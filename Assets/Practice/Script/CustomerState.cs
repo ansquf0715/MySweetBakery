@@ -473,12 +473,14 @@ public class RequestSeatState : ICustomerState
         this.manager = customer.manager;
 
         seatSprite = Resources.Load<Sprite>("TableChair");
-        trashPrefab = Resources.Load<GameObject>("Trash");
+        //trashPrefab = Resources.Load<GameObject>("Trash");
+        trashPrefab = Resources.Load<GameObject>("Trash_bag");
     }
 
     public void Enter()
     {
-        Vector3 initialPos = new Vector3(-2.5f, 0.5f, 4.5f);
+        //Vector3 initialPos = new Vector3(-2.5f, 0.5f, 4.5f);
+        Vector3 initialPos = new Vector3(-5.3f, 0.5f, 3.3f);
         agent.SetDestination(initialPos);
         agent.isStopped = false;
         customer.StartCoroutine(WaitUntilArriveInitialPos());
@@ -586,7 +588,9 @@ public class RequestSeatState : ICustomerState
             }
             customer.transform.rotation = endRot;
             agent.updatePosition = false;
-            customer.transform.position += new Vector3(0, 0.5f, 0);
+
+            //yield return new WaitForSeconds(0.5f);
+            customer.transform.position += new Vector3(0.3f, 0.3f, 0);
             customer.eating = true;
             customer.StartCoroutine(MoveBreadsToTable());
         }
@@ -647,7 +651,7 @@ public class RequestSeatState : ICustomerState
         {
             customer.destroyBreads();
         }
-        Vector3 trashPos = new Vector3(-5.55f, 1.5f, 7.7f);
+        Vector3 trashPos = new Vector3(-5.55f, 1.5f, 7.4f);
         trash = GameObject.Instantiate(trashPrefab,
             trashPos, Quaternion.identity);
 
