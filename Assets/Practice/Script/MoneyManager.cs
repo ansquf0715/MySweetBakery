@@ -55,6 +55,12 @@ public class MoneyManager : MonoBehaviour
         }
     }
 
+    public void getMoneyFromAd()
+    {
+        money += 100;
+        UpdateMoneyUI();
+    }
+
     public bool PayMoney(int amount = 1)
     {
         if (money >= amount)
